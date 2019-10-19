@@ -1,0 +1,12 @@
+{
+    "extends": "../../tslint.json",
+	"rules": {
+		"no-implicit-dependencies": [
+            true,
+            "dev",
+			[
+				"vscode"
+			]
+		]
+    }
+}

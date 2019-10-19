@@ -1,0 +1,50 @@
+{
+	"name": "cellery-vscode-extension",
+	"displayName": "Cellery",
+	"publisher": "cellery",
+	"description": "Cellery VS Code Plugin",
+	"version": "0.1.0",
+	"engines": {
+		"vscode": "^1.39.0"
+	},
+	"categories": [
+		"Programming Languages"
+	],
+	"main": "./dist/extension.js",
+	"activationEvents": [
+		"onLanguage:cellery"
+	],
+	"contributes": {
+		"languages": [
+			{
+				"id": "cellery",
+				"extensions": [
+					".bal"
+				]
+			}
+		]
+	},
+	"scripts": {
+		"format:check": "tslint -p ./ './src/**/*.ts'",
+		"format:fix": "npm run format:check -- --fix",
+		"compile": "webpack --mode development",
+		"watch": "webpack --mode development --watch",
+		"pretest": "tsc -p ./",
+		"test": "node ./dist/test/runTest.js",
+		"vscode:prepublish": "webpack --mode production"
+	},
+	"devDependencies": {
+		"@types/glob": "^7.1.1",
+		"@types/mocha": "^5.2.6",
+		"@types/node": "^10.12.21",
+		"@types/vscode": "^1.39.0",
+		"glob": "^7.1.4",
+		"mocha": "^6.1.4",
+		"ts-loader": "^6.2.0",
+		"tslint": "^5.12.1",
+		"typescript": "^3.3.1",
+		"vscode-test": "^1.2.0",
+		"webpack": "^4.41.2",
+		"webpack-cli": "^3.3.9"
+	}
+}

@@ -16,16 +16,20 @@
  * under the License.
  */
 
-import * as fs from "fs";
-import * as path from "path";
+package io.cellery.tooling.ballerina.langserver.plugins;
 
-const runPostInstallTasks = () => {
-    console.log("Hello");
-    fs.mkdirSync("/home/nadun/Downloads/test");
-    fs.writeFileSync("/home/nadun/Downloads/test/hello.txt", "Hello World");
-    console.log("Done");
-};
+/**
+ * Cellery Ballerina Language Server related constants.
+ */
+public class Constants {
 
-// tslint:disable:no-floating-promises
-runPostInstallTasks();
-// tslint:enable
+    public static final String CELLERY_PACKAGE_ORG_NAME = "celleryio";
+    public static final String CELLERY_PACKAGE_NAME = "cellery";
+
+    /**
+     * Completion Providers related constants.
+     */
+    public static class CompletionProvider {
+        public static final String COMPONENT_SNIPPET_LABEL = "cellery:component";
+    }
+}

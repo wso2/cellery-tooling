@@ -16,9 +16,20 @@
  * under the License.
  */
 
+/**
+ * VSCode extension related constants.
+ */
 class Constants {
     public static readonly LANG_SERVER_PLUGINS_JAR = "io.cellery.tooling.ballerina.langserver.plugins.jar";
     public static readonly CELLERY_BLANG_SERVER_PLUGINS_DIR = "/usr/share/cellery/blang-server-plugins";
+
+    /**
+     * VSCode commands related constants.
+     * This includes all commands which are used by this extension for performing different actions.
+     */
+    public static readonly Commands = class Commands {
+        public static readonly WORKBENCH_RELOAD = "workbench.action.reloadWindow";
+    }
 }
 
 export default Constants;

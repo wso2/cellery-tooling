@@ -18,19 +18,19 @@
 
 import * as vscode from "vscode";
 import BalLangServerUtils from "./BalLangServerUtils";
+import Constants from "./constants";
 
 export const activate = (context: vscode.ExtensionContext) => {
-    vscode.window.showInformationMessage("Hello World!");
-
     try {
-        if (!BalLangServerUtils.isLangPluginsAlreadyInstalled()) {
+        if (!BalLangServerUtils.isLangPluginsAlreadyInstalled(context.extensionPath)) {
             BalLangServerUtils.installLangPlugins(context.extensionPath);
+            const reloadAction = "Reload";
             vscode.window.showInformationMessage(
                 "Installed Cellery code completion plugins.\nReload required for the changes to take effect.",
-                "Reload",
+                reloadAction,
             ).then((action) => {
-                if (action === "Reload") {
-                    vscode.commands.executeCommand("workbench.action.reloadWindow");
+                if (action === reloadAction) {
+                    vscode.commands.executeCommand(Constants.Commands.WORKBENCH_RELOAD);
                 }
             });
         }

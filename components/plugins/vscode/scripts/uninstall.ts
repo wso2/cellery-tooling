@@ -16,13 +16,6 @@
  * under the License.
  */
 
-import * as fs from "fs";
-import * as path from "path";
+import BalLangServerUtils from "../src/BalLangServerUtils";
 
-const runUninstallTasks = () => {
-    fs.rmdirSync("/home/nadun/Downloads/test/hello.txt");
-};
-
-// tslint:disable:no-floating-promises
-runUninstallTasks();
-// tslint:enable
+BalLangServerUtils.uninstallLangPlugins();

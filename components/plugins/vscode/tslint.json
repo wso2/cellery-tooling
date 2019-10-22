@@ -120,7 +120,7 @@
 		],
 		"space-before-function-paren": [
 			true,
-			"always"
+			"never"
 		],
 		"prefer-while": true,
 		"type-literal-delimiter": true,

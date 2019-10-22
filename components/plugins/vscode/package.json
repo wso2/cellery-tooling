@@ -3,7 +3,12 @@
 	"displayName": "Cellery",
 	"publisher": "cellery",
 	"description": "Cellery VS Code Plugin",
-	"version": "0.1.0",
+	"version": "0.5.0-SNAPSHOT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/wso2-cellery/cellery-tooling.git",
+		"directory": "components/plugins/vscode"
+	},
 	"engines": {
 		"vscode": "^1.39.0"
 	},
@@ -12,39 +17,40 @@
 	],
 	"main": "./dist/extension.js",
 	"activationEvents": [
-		"onLanguage:cellery"
+		"onLanguage:ballerina"
 	],
-	"contributes": {
-		"languages": [
-			{
-				"id": "cellery",
-				"extensions": [
-					".bal"
-				]
-			}
-		]
-	},
 	"scripts": {
-		"format:check": "tslint -p ./ './src/**/*.ts'",
+		"clean": "rimraf ./dist/ && rimraf ./*.vsix && rimraf ./resources/io.cellery.tooling.ballerina.langserver.plugins.jar",
+		"format:check": "tslint -p ./ './src/**/*.ts' './test/**/*.ts' './scripts/**/*.ts'",
 		"format:fix": "npm run format:check -- --fix",
-		"compile": "webpack --mode development",
-		"watch": "webpack --mode development --watch",
-		"pretest": "tsc -p ./",
+		"compile:dev": "npm run clean && webpack --mode development",
+		"compile:prod": "npm run clean && webpack --mode production",
+		"watch": "npm run compile:dev -- --watch",
+		"pretest": "npm run clean && tsc -p ./",
 		"test": "node ./dist/test/runTest.js",
-		"vscode:prepublish": "webpack --mode production"
+		"prepackage": "npm run compile:prod && copyfiles --error --flat \"../../langserver/plugins/target/io.cellery.tooling.ballerina.langserver.plugins.jar\" \"./resources\"",
+		"package": "vsce package",
+		"vscode:uninstall": "node ./dist/uninstall.js"
 	},
 	"devDependencies": {
+		"@types/fs-extra": "^8.0.1",
 		"@types/glob": "^7.1.1",
 		"@types/mocha": "^5.2.6",
 		"@types/node": "^10.12.21",
 		"@types/vscode": "^1.39.0",
+		"copyfiles": "^2.1.1",
 		"glob": "^7.1.4",
 		"mocha": "^6.1.4",
+		"rimraf": "^3.0.0",
 		"ts-loader": "^6.2.0",
 		"tslint": "^5.12.1",
 		"typescript": "^3.3.1",
+		"vsce": "^1.68.0",
 		"vscode-test": "^1.2.0",
 		"webpack": "^4.41.2",
 		"webpack-cli": "^3.3.9"
+	},
+	"dependencies": {
+		"fs-extra": "^8.1.0"
 	}
 }

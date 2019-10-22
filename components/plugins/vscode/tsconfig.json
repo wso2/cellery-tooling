@@ -7,7 +7,10 @@
 			"es6"
 		],
 		"sourceMap": true,
-		"rootDir": "src",
+		"rootDirs": [
+			"src",
+			"scripts"
+		],
 		"strict": true,
 		"noUnusedParameters": true
 	},

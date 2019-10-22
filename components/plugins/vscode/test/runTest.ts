@@ -20,7 +20,7 @@ import * as path from "path";
 
 import { runTests } from "vscode-test";
 
-const main = async () => {
+const main = async() => {
     try {
         // The folder containing the Extension Manifest package.json
         // Passed to `--extensionDevelopmentPath`

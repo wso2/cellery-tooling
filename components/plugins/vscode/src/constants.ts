@@ -21,15 +21,17 @@
  */
 class Constants {
     public static readonly LANG_SERVER_PLUGINS_JAR = "io.cellery.tooling.ballerina.langserver.plugins.jar";
-    public static readonly CELLERY_BLANG_SERVER_PLUGINS_DIR = "/usr/share/cellery/blang-server-plugins";
+    public static readonly CELLERY_TOOLING_DIR = "tooling";
+    public static readonly BAL_LANG_SERVER_PLUGINS_DIR = "lib/tools/lang-server/lib";
+    public static readonly FIX_SYMLINK_SCRIPT = "resources/fixPluginsSymlink.sh";
 
     /**
      * VSCode commands related constants.
      * This includes all commands which are used by this extension for performing different actions.
      */
-    public static readonly Commands = class Commands {
+    public static readonly commands = class Commands {
         public static readonly WORKBENCH_RELOAD = "workbench.action.reloadWindow";
-    }
+    };
 }
 
 export default Constants;

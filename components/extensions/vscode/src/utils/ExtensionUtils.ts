@@ -21,7 +21,7 @@ import * as path from "path";
 import * as vscode from "vscode";
 import BalLangServerUtils from "./BalLangServerUtils";
 import CommonUtils from "./CommonUtils";
-import Constants from "./constants";
+import Constants from "../constants";
 
 /**
  * Extension related utilities.
@@ -36,19 +36,25 @@ class ExtensionUtils {
     public static setupBalLangServerPlugins(extensionPath: string) {
         const celleryToolingDir = path.resolve(CommonUtils.getCelleryHome(), Constants.CELLERY_TOOLING_DIR);
         if (!BalLangServerUtils.isSymlinkPresent() || !fse.existsSync(celleryToolingDir)) {
+            const runAction = "Run Command";
+            const command = `bash ${path.resolve(extensionPath, Constants.FIX_SYMLINK_SCRIPT)}`;
             vscode.window.showErrorMessage(
                 `Unable to properly configure auto completion due to missing links.
-                Please run "bash ${path.resolve(extensionPath, Constants.FIX_SYMLINK_SCRIPT)}"
-                and restart VS Code to fix this issue`,
-            );
+                Please run "${command}" and restart VS Code to fix this issue`,
+                runAction
+            ).then((action) => {
+                if (action === runAction) {
+                    const terminal = vscode.window.createTerminal("Cellery Tooling");
+                    terminal.show();
+                    terminal.sendText(command, true);
+                }
+            });
         } else if (!BalLangServerUtils.isLangPluginsAlreadyInstalled(extensionPath)) {
             BalLangServerUtils.installLangPlugins(extensionPath);
-
-            // Prompting user to reload
             const reloadAction = "Reload";
             vscode.window.showInformationMessage(
-                "Installed Cellery code completion plugins. Reload required for the changes to take effect.",
-                reloadAction,
+                "Installed Cellery code completion plugins. Please reload to apply the changes.",
+                reloadAction
             ).then((action) => {
                 if (action === reloadAction) {
                     vscode.commands.executeCommand(Constants.commands.WORKBENCH_RELOAD);

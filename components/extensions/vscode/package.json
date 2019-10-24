@@ -31,7 +31,7 @@
 		"watch": "npm run compile:dev -- --watch",
 		"pretest": "npm run clean && tsc -p ./",
 		"test": "node ./dist/test/runTest.js",
-		"prepackage": "npm run compile:prod && copyfiles --error --flat \"../../langserver/plugins/target/io.cellery.tooling.ballerina.langserver.plugins.jar\" \"./resources\"",
+		"prepackage": "npm run compile:prod && copyfiles --error --flat \"../../blangserver-plugins/target/io.cellery.tooling.ballerina.langserver.plugins.jar\" \"./resources\"",
 		"package": "vsce package",
 		"vscode:uninstall": "node ./dist/uninstall.js"
 	},

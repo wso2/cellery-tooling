@@ -18,7 +18,7 @@
 
 import * as fse from "fs-extra";
 import * as path from "path";
-import Constants from "../src/constants";
+import Constants from "../constants";
 import CommonUtils from "./CommonUtils";
 
 class BalLangServerUtils {

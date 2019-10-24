@@ -24,7 +24,7 @@
 #
 
 echo
-echo "🔨 Fixing Cellery Tooling Plugin Links"
+echo "Fixing Cellery Tooling Plugin Links"
 echo
 
 BAL_HOME="$(ballerina home | tr -d '[:space:]')"
@@ -36,7 +36,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     # MacOS
     CELLERY_HOME="/Library/Cellery"
 else
-    echo "😞 Failed to fix Tooling links due to unknown OS Type ${OSTYPE}"
+    echo "Failed to fix Tooling links due to unknown OS Type ${OSTYPE}"
     exit 1
 fi
 
@@ -47,29 +47,30 @@ CELLERY_TOOLING_DIR="${CELLERY_HOME}/tooling"
 CELLERY_TOOLING_PLUGINS_JAR="${CELLERY_TOOLING_DIR}/${PLUGINS_JAR}"
 
 # Ensuring that the Cellery Tooling directory is present
-sudo mkdir -p "${CELLERY_TOOLING_DIR}"
-sudo chmod 777 "${CELLERY_TOOLING_DIR}"
+if [[ ! -d "${CELLERY_TOOLING_DIR}" ]]; then
+    echo "Creating missing Cellery tooling directory"
+    sudo mkdir -p "${CELLERY_TOOLING_DIR}"
+    sudo chmod 777 "${CELLERY_TOOLING_DIR}"
+fi
 
 function createSymlink() {
-    echo "➡️  Creating symlink from Ballerina Language Server plugins directory to Cellery tooling directory"
-    echo
-    echo "ℹ️  Please restart the IDE for changes to take effect"
+    echo "Creating symlink from Ballerina Language Server plugins directory to Cellery tooling directory"
     sudo ln -s "${CELLERY_TOOLING_PLUGINS_JAR}" "${BAL_LANG_SERVER_PLUGINS_JAR}"
+    echo
+    echo "Please restart the IDE for changes to take effect"
 }
 
 if [[ -L "${BAL_LANG_SERVER_PLUGINS_JAR}" ]]; then
     if [[ "$(readlink -n ${BAL_LANG_SERVER_PLUGINS_JAR})" == "${CELLERY_TOOLING_PLUGINS_JAR}" ]]; then
-        echo "😏 The symlink is already in place and points to the correct plugins"
+        echo "The symlink is already in place and points to the correct plugins"
     else
-        echo "🔥 Removing invalid symlink for plugins"
+        echo "Removing invalid symlink for plugins"
         sudo rm ${BAL_LANG_SERVER_PLUGINS_JAR}
         createSymlink
     fi
 else
-    echo "😮 Symlink not detected for Cellery tooling Ballerina plugins"
+    echo "Symlink not detected for Cellery tooling Ballerina plugins"
     createSymlink
 fi
 
-echo
-echo "😃 Cellery Tooling plugins are ready"
 echo

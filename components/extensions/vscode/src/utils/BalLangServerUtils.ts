@@ -92,7 +92,7 @@ class BalLangServerUtils {
         const symlink = path.resolve(CommonUtils.getBallerinaHome(), Constants.BAL_LANG_SERVER_PLUGINS_DIR,
                                      Constants.LANG_SERVER_PLUGINS_JAR);
         const expectedSymlinkTarget = path.resolve(CommonUtils.getCelleryHome(), Constants.CELLERY_TOOLING_DIR,
-            Constants.LANG_SERVER_PLUGINS_JAR);
+                                                   Constants.LANG_SERVER_PLUGINS_JAR);
         let symlinkExists;
         try {
             const symlinkStats = fse.lstatSync(symlink);

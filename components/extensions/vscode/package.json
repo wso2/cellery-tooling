@@ -27,7 +27,7 @@
 		"format:check": "tslint -p ./ './src/**/*.ts' './test/**/*.ts' './scripts/**/*.ts'",
 		"format:fix": "npm run format:check -- --fix",
 		"compile:dev": "npm run clean && webpack --mode development",
-		"compile:prod": "npm run clean && webpack --mode production",
+		"compile:prod": "npm run clean && npm run format:check && webpack --mode production",
 		"watch": "npm run compile:dev -- --watch",
 		"pretest": "npm run clean && tsc -p ./",
 		"test": "node ./dist/test/runTest.js",

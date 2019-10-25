@@ -19,9 +19,9 @@
 import * as fse from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
+import Constants from "../constants";
 import BalLangServerUtils from "./BalLangServerUtils";
 import CommonUtils from "./CommonUtils";
-import Constants from "../constants";
 
 /**
  * Extension related utilities.
@@ -41,7 +41,7 @@ class ExtensionUtils {
             vscode.window.showErrorMessage(
                 `Unable to properly configure auto completion due to missing links.
                 Please run "${command}" and restart VS Code to fix this issue`,
-                runAction
+                runAction,
             ).then((action) => {
                 if (action === runAction) {
                     const terminal = vscode.window.createTerminal("Cellery Tooling");
@@ -54,7 +54,7 @@ class ExtensionUtils {
             const reloadAction = "Reload";
             vscode.window.showInformationMessage(
                 "Installed Cellery code completion plugins. Please reload to apply the changes.",
-                reloadAction
+                reloadAction,
             ).then((action) => {
                 if (action === reloadAction) {
                     vscode.commands.executeCommand(Constants.commands.WORKBENCH_RELOAD);

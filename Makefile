@@ -24,11 +24,7 @@ all: init clean build package
 
 
 .PHONY: init
-init: init.blangserver-plugins init.extensions
-
-.PHONY: init.blangserver-plugins
-init.blangserver-plugins:
-	@:
+init: init.extensions
 
 .PHONY: init.extensions
 init.extensions: init.extensions.vscode
@@ -43,7 +39,7 @@ init.extensions.vscode:
 clean: init clean.blangserver-plugins clean.extensions
 
 .PHONY: clean.blangserver-plugins
-clean.blangserver-plugins: init.blangserver-plugins
+clean.blangserver-plugins:
 	cd components/blangserver-plugins; \
 	mvn clean
 
@@ -57,18 +53,18 @@ clean.extensions.vscode: init.extensions.vscode
 
 
 .PHONY: build
-build: init build.blangserver-plugins build.extensions
+build: clean build.blangserver-plugins build.extensions
 
 .PHONY: build.blangserver-plugins
-build.blangserver-plugins: init.blangserver-plugins
+build.blangserver-plugins: clean.blangserver-plugins
 	cd components/blangserver-plugins; \
 	mvn install
 
 .PHONY: build.extensions
-build.extensions: init.extensions build.blangserver-plugins build.extensions.vscode
+build.extensions: clean.extensions build.blangserver-plugins build.extensions.vscode
 
 .PHONY: build.extensions.vscode
-build.extensions.vscode: init.extensions.vscode
+build.extensions.vscode: clean.extensions.vscode
 	cd components/extensions/vscode; \
 	npm run compile:prod
 

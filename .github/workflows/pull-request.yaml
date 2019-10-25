@@ -1,0 +1,25 @@
+name: Pull Request
+on: [pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+    - name: Cloning repository
+      uses: actions/checkout@v1
+    - name: Setup JDK
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: Build
+      run: make init clean build
+    - name: Build Extension Installers
+      run: make package
+    - name: Prepare Installers Directory
+      run: |
+        mkdir -p build/installers
+        cp components/extensions/vscode/cellery-vscode-extension-*.vsix build/installers/
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: Installers
+        path: build/installers

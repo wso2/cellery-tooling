@@ -13,7 +13,7 @@
 		"vscode": "^1.39.0"
 	},
 	"categories": [
-		"Programming Languages"
+		"Other"
 	],
 	"main": "./dist/extension.js",
 	"activationEvents": [
@@ -27,11 +27,11 @@
 		"format:check": "tslint -p ./ './src/**/*.ts' './test/**/*.ts' './scripts/**/*.ts'",
 		"format:fix": "npm run format:check -- --fix",
 		"compile:dev": "npm run clean && webpack --mode development",
-		"compile:prod": "npm run clean && npm run format:check && webpack --mode production",
+		"compile:prod": "npm run clean && npm run format:check && webpack --mode production --env.CELLERY_TOOLING_VERSION=${CELLERY_TOOLING_VERSION}",
 		"watch": "npm run compile:dev -- --watch",
 		"pretest": "npm run clean && tsc -p ./",
 		"test": "node ./dist/test/runTest.js",
-		"prepackage": "npm run compile:prod && copyfiles --error --flat \"../../blangserver-plugins/target/io.cellery.tooling.ballerina.langserver.plugins.jar\" \"./resources\"",
+		"prepackage": "copyfiles --error --flat \"../../blangserver-plugins/target/io.cellery.tooling.ballerina.langserver.plugins.jar\" \"./resources\"",
 		"package": "vsce package",
 		"vscode:uninstall": "node ./dist/uninstall.js"
 	},
@@ -45,6 +45,7 @@
 		"glob": "^7.1.4",
 		"mocha": "^6.1.4",
 		"rimraf": "^3.0.0",
+		"string-replace-loader": "^2.2.0",
 		"ts-loader": "^6.2.0",
 		"tslint": "^5.12.1",
 		"typescript": "^3.3.1",

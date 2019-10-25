@@ -33,11 +33,20 @@ class BalLangServerUtils {
         const langPluginsJarExists = fse.existsSync(langPluginsJar);
 
         if (langPluginsJarExists) {
-            const targetLangPluginsJar = path.resolve(CommonUtils.getCelleryHome(), Constants.CELLERY_TOOLING_DIR,
-                                                      Constants.LANG_SERVER_PLUGINS_JAR);
+            const celleryToolingDir = path.resolve(CommonUtils.getCelleryHome(), Constants.CELLERY_TOOLING_DIR);
+            const targetLangPluginsJar = path.resolve(celleryToolingDir, Constants.LANG_SERVER_PLUGINS_JAR);
             console.log("Installing Lang Server plugins into the Cellery Home tooling directory");
             fse.copyFileSync(langPluginsJar, targetLangPluginsJar);
             fse.chmodSync(targetLangPluginsJar, 0o666);
+
+            // Writing lang plugins info
+            const versionInfo = {
+                installedBy: "Cellery VS Code Extension",
+                version: Constants.CELLERY_TOOLING_VERSION,
+                timestamp: new Date().toString(),
+            };
+            const langPluginsInfoFile = path.resolve(celleryToolingDir, Constants.LANG_PLUGINS_INFO_FILE);
+            fse.writeFileSync(langPluginsInfoFile, JSON.stringify(versionInfo));
         } else {
             throw Error("Unable to find Cellery Ballerina lang server plugins Jar " +
                 "as extension doesn't contain plugins");
@@ -48,12 +57,13 @@ class BalLangServerUtils {
      * Remove the already installed lang server plugins Jar in the Ballerina lang server libs directory.
      */
     public static uninstallLangPlugins() {
-        const targetLangPluginsJar = path.resolve(CommonUtils.getCelleryHome(), Constants.CELLERY_TOOLING_DIR,
-                                                  Constants.LANG_SERVER_PLUGINS_JAR);
+        const celleryToolingDir = path.resolve(CommonUtils.getCelleryHome(), Constants.CELLERY_TOOLING_DIR);
+        const targetLangPluginsJar = path.resolve(celleryToolingDir, Constants.LANG_SERVER_PLUGINS_JAR);
         const targetLangPluginsJarExists = fse.existsSync(targetLangPluginsJar);
         if (targetLangPluginsJarExists) {
             console.log("Removing Lang Server plugins from Cellery Home tooling directory");
             fse.unlinkSync(targetLangPluginsJar);
+            fse.unlinkSync(path.resolve(celleryToolingDir, Constants.LANG_PLUGINS_INFO_FILE));
         } else {
             console.log("Unable cleanup Ballerina lang server plugins since the Jar was not found");
         }

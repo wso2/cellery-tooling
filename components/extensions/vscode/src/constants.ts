@@ -21,9 +21,13 @@
  */
 class Constants {
     public static readonly LANG_SERVER_PLUGINS_JAR = "io.cellery.tooling.ballerina.langserver.plugins.jar";
+    public static readonly LANG_PLUGINS_INFO_FILE = "lang-plugins-info.json";
     public static readonly CELLERY_TOOLING_DIR = "tooling";
     public static readonly BAL_LANG_SERVER_PLUGINS_DIR = "lib/tools/lang-server/lib";
     public static readonly FIX_SYMLINK_SCRIPT = "resources/fixPluginsSymlink.sh";
+
+    // VERSION is replaced at build time
+    public static readonly CELLERY_TOOLING_VERSION = "{{VERSION}}";
 
     /**
      * VSCode commands related constants.

@@ -2,8 +2,8 @@
     "extends": "../tslint.json",
 	"rules": {
 		"no-implicit-dependencies": [
-            true,
-            "dev",
+			true,
+			"dev",
 			[
 				"vscode"
 			]

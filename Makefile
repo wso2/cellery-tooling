@@ -24,7 +24,13 @@ all: init clean build package
 
 
 .PHONY: init
-init: init.extensions
+init: init.blangserver-plugins init.extensions
+
+.PHONY: init.blangserver-plugins
+init.blangserver-plugins:
+	cd components/blangserver-plugins; \
+	mvn versions:set -DnewVersion=${VERSION}; \
+	mvn versions:commit
 
 .PHONY: init.extensions
 init.extensions: init.extensions.vscode
@@ -32,6 +38,7 @@ init.extensions: init.extensions.vscode
 .PHONY: init.extensions.vscode
 init.extensions.vscode:
 	cd components/extensions/vscode; \
+	npm version ${VERSION} --allow-same-version --no-git-tag-version; \
 	npm ci
 
 
@@ -39,7 +46,7 @@ init.extensions.vscode:
 clean: init clean.blangserver-plugins clean.extensions
 
 .PHONY: clean.blangserver-plugins
-clean.blangserver-plugins:
+clean.blangserver-plugins: init.blangserver-plugins
 	cd components/blangserver-plugins; \
 	mvn clean
 
@@ -64,9 +71,9 @@ build.blangserver-plugins: clean.blangserver-plugins
 build.extensions: clean.extensions build.blangserver-plugins build.extensions.vscode
 
 .PHONY: build.extensions.vscode
-build.extensions.vscode: clean.extensions.vscode
+build.extensions.vscode: clean.extensions.vscode build.blangserver-plugins
 	cd components/extensions/vscode; \
-	npm run compile:prod
+	CELLERY_TOOLING_VERSION=${VERSION} npm run compile:prod
 
 
 .PHONY: package

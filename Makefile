@@ -19,41 +19,41 @@ PROJECT_PKG := github.com/cellery-io/mesh-observability
 VERSION := 0.5.0-SNAPSHOT
 
 
-all: clean init build package
+all: init clean build package
 
+
+
+.PHONY: init
+init: init.blangserver-plugins init.extensions
+
+.PHONY: init.blangserver-plugins
+init.blangserver-plugins:
+	@:
+
+.PHONY: init.extensions
+init.extensions: init.extensions.vscode
+
+.PHONY: init.extensions.vscode
+init.extensions.vscode:
+	cd components/extensions/vscode; \
+	npm ci
 
 
 .PHONY: clean
-clean: clean.blangserver-plugins clean.extensions
+clean: init clean.blangserver-plugins clean.extensions
 
 .PHONY: clean.blangserver-plugins
-clean.blangserver-plugins:
+clean.blangserver-plugins: init.blangserver-plugins
 	cd components/blangserver-plugins; \
 	mvn clean
 
 .PHONY: clean.extensions
-clean.extensions: clean.extensions.vscode
+clean.extensions: init.extensions clean.extensions.vscode
 
 .PHONY: clean.extensions.vscode
-clean.extensions.vscode:
+clean.extensions.vscode: init.extensions.vscode
 	cd components/extensions/vscode; \
 	npm run clean
-
-
-.PHONY: init
-init: clean init.blangserver-plugins init.extensions
-
-.PHONY: init.blangserver-plugins
-init.blangserver-plugins: clean.blangserver-plugins
-	@:
-
-.PHONY: init.extensions
-init.extensions: clean.extensions init.extensions.vscode
-
-.PHONY: init.extensions.vscode
-init.extensions.vscode: clean.extensions.vscode
-	cd components/extensions/vscode; \
-	npm ci
 
 
 .PHONY: build

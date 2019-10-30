@@ -26,6 +26,22 @@ export const activate = (context: vscode.ExtensionContext) => {
         vscode.window.showErrorMessage("Failed to install Cellery code completion plugins");
         throw error;
     }
+    const command = 'celleryExtension.build';
+
+    const commandHandler = (name: string = 'buildCell') => {        
+        const vars = {
+            file: vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null,					
+            cwd: vscode.workspace.rootPath ||  require('os').homedir()
+        }
+        const command = "cellery build "+ vars.file +" madusha/tooling:0.1.0";
+        const terminal = vscode.window.createTerminal({ name, cwd: vars.cwd });
+        terminal.show(true)
+        if (vars.file !== null) {
+            terminal.sendText(command)
+        }
+    };
+  
+    context.subscriptions.push(vscode.commands.registerCommand(command, commandHandler));  
 };
 
 export const deactivate = () => {

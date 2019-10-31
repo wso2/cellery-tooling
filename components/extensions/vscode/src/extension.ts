@@ -22,26 +22,29 @@ import ExtensionUtils from "./utils/ExtensionUtils";
 export const activate = (context: vscode.ExtensionContext) => {
     try {
         ExtensionUtils.setupBalLangServerPlugins(context.extensionPath);
+        const command = "celleryExtension.build";
+        const commandHandler = async (name: string = "buildCell") => {
+            const cellName = await vscode.window.showInputBox({ placeHolder: "org-name/image-name:version" });
+            const vars = {
+                file: vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null,
+                cwd: vscode.workspace.rootPath ||  require("os").homedir(),
+            }
+            if (cellName) {
+                const celleryBuildCommand = `cellery build ${vars.file} ${cellName}`;
+                const terminal = vscode.window.createTerminal({ name, cwd: vars.cwd });
+                terminal.show(true)
+                if (vars.file !== null) {
+                    terminal.sendText(celleryBuildCommand);
+                }
+            }
+        };
+
+        context.subscriptions.push(vscode.commands.registerCommand(command, commandHandler));
     } catch (error) {
         vscode.window.showErrorMessage("Failed to install Cellery code completion plugins");
         throw error;
     }
-    const command = 'celleryExtension.build';
 
-    const commandHandler = (name: string = 'buildCell') => {        
-        const vars = {
-            file: vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null,					
-            cwd: vscode.workspace.rootPath ||  require('os').homedir()
-        }
-        const command = "cellery build "+ vars.file +" madusha/tooling:0.1.0";
-        const terminal = vscode.window.createTerminal({ name, cwd: vars.cwd });
-        terminal.show(true)
-        if (vars.file !== null) {
-            terminal.sendText(command)
-        }
-    };
-  
-    context.subscriptions.push(vscode.commands.registerCommand(command, commandHandler));  
 };
 
 export const deactivate = () => {

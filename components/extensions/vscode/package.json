@@ -26,9 +26,18 @@
 		"commands": [
 		  {
 			"command": "celleryExtension.build",
-			"title": "Cellery: Build"
+			"title": "Cellery: Build",
+			"icon": "./resources/dark/build.svg"
 		  }
-		]
+		],
+		"menus": {
+			"editor/title": [
+				{
+					"command": "celleryExtension.build",
+					"group": "navigation"
+				}
+			]
+		}
 	  },
 	"scripts": {
 		"clean": "rimraf ./dist/ && rimraf ./*.vsix && rimraf ./resources/io.cellery.tooling.ballerina.langserver.plugins.jar",

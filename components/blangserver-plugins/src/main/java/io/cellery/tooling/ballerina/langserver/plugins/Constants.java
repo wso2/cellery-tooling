@@ -18,6 +18,8 @@
 
 package io.cellery.tooling.ballerina.langserver.plugins;
 
+import java.io.File;
+
 /**
  * Cellery Ballerina Language Server related constants.
  */
@@ -25,6 +27,13 @@ public class Constants {
 
     public static final String CELLERY_PACKAGE_ORG_NAME = "celleryio";
     public static final String CELLERY_PACKAGE_NAME = "cellery";
+    public static final String CELLERY_COMPONENT_TYPE = "Component";
+    public static final String CELLERY_DEPENDENCIES_TYPE = "Dependencies";
+
+    public static final String CELLERY_IMAGE_EXTENSION = ".zip";
+    public static final String LOCAL_REPO_DIRECTORY = System.getProperty("user.home") + File.separator + ".cellery"
+            + File.separator + "repo";
+    public static final String CELLERY_IMAGE_REFERENCE_FILE = "artifacts/ref/reference.json";
 
     /**
      * Completion Providers related constants.

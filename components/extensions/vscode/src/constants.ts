@@ -35,7 +35,13 @@ class Constants {
      */
     public static readonly commands = class Commands {
         public static readonly WORKBENCH_RELOAD = "workbench.action.reloadWindow";
+        public static readonly CELLERY_BUILD = "celleryExtension.build";
     };
+
+    public static readonly CELLERY_KEYWORD = "cellery";
+    public static readonly ORG_NAME = "org-name";
+    public static readonly IMAGE_NAME = "image-name";
+    public static readonly VERSION = "version";
 }
 
 export default Constants;

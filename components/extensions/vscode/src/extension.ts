@@ -16,30 +16,32 @@
  * under the License.
  */
 
+import * as os from "os";
 import * as vscode from "vscode";
+import Constants from "./constants";
 import ExtensionUtils from "./utils/ExtensionUtils";
 
 export const activate = (context: vscode.ExtensionContext) => {
     try {
         ExtensionUtils.setupBalLangServerPlugins(context.extensionPath);
-        const command = "celleryExtension.build";
-        const commandHandler = async (name: string = "buildCell") => {
-            const cellName = await vscode.window.showInputBox({ placeHolder: "org-name/image-name:version" });
-            const vars = {
-                file: vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null,
-                cwd: vscode.workspace.rootPath ||  require("os").homedir(),
-            }
-            if (cellName) {
-                const celleryBuildCommand = `cellery build ${vars.file} ${cellName}`;
-                const terminal = vscode.window.createTerminal({ name, cwd: vars.cwd });
-                terminal.show(true)
-                if (vars.file !== null) {
-                    terminal.sendText(celleryBuildCommand);
+        const commandHandler = (command: string) => async() => {
+            const cellName = await vscode.window.showInputBox({
+                placeHolder: `${Constants.ORG_NAME}/
+            ${Constants.IMAGE_NAME}:${Constants.VERSION}`,
+            });
+            const file = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
+            const cwd = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri : null;
+            if (cellName && file && cwd) {
+                const celleryCommand = `${Constants.CELLERY_KEYWORD} ${command} ${file} ${cellName}`;
+                const terminal = vscode.window.createTerminal({ name: command, cwd: cwd});
+                terminal.show(true);
+                if (file !== null) {
+                    terminal.sendText(celleryCommand);
                 }
             }
         };
-
-        context.subscriptions.push(vscode.commands.registerCommand(command, commandHandler));
+        context.subscriptions.push(vscode.commands.registerCommand(Constants.commands.CELLERY_BUILD,
+                                                                   commandHandler("build")));
     } catch (error) {
         vscode.window.showErrorMessage("Failed to install Cellery code completion plugins");
         throw error;

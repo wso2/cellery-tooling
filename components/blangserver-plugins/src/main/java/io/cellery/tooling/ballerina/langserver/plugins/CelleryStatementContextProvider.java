@@ -18,11 +18,14 @@
 
 package io.cellery.tooling.ballerina.langserver.plugins;
 
+import io.cellery.tooling.ballerina.langserver.plugins.visitor.CelleryInfoCollector;
 import org.ballerinalang.annotation.JavaSPIService;
+import org.ballerinalang.langserver.compiler.DocumentServiceKeys;
 import org.ballerinalang.langserver.compiler.LSContext;
 import org.ballerinalang.langserver.completions.CompletionKeys;
 import org.ballerinalang.langserver.completions.providers.contextproviders.StatementContextProvider;
 import org.eclipse.lsp4j.CompletionItem;
+import org.wso2.ballerinalang.compiler.tree.BLangNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,8 +69,14 @@ public class CelleryStatementContextProvider extends StatementContextProvider {
      * @return {@link List<CompletionItem>} List of calculated Completion Items
      */
     private List<CompletionItem> getCelleryCompletions(LSContext context) {
+        BLangNode packageNode = context.get(DocumentServiceKeys.CURRENT_BLANG_PACKAGE_CONTEXT_KEY);
+        CelleryInfoCollector celleryInfoCollector = new CelleryInfoCollector(context);
+        packageNode.accept(celleryInfoCollector);
+
         List<CompletionItem> completions = new ArrayList<>();
         completions.add(SnippetGenerator.getComponentSnippet().build(context));
+        completions.add(SnippetGenerator.getCellImageSnippet(celleryInfoCollector.getComponents()).build(context));
+        completions.add(SnippetGenerator.getCompositeImageSnippet(celleryInfoCollector.getComponents()).build(context));
         return completions;
     }
 }

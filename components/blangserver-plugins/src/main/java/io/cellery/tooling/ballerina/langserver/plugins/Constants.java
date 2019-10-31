@@ -30,6 +30,9 @@ public class Constants {
      * Completion Providers related constants.
      */
     public static class CompletionProvider {
-        public static final String COMPONENT_SNIPPET_LABEL = "cellery:component";
+        private static final String CELLERY_PREFIX = "cellery:";
+        public static final String COMPONENT_SNIPPET_LABEL = CELLERY_PREFIX + "component";
+        public static final String CELL_SNIPPET_LABEL = CELLERY_PREFIX + "cell";
+        public static final String COMPOSITE_SNIPPET_LABEL = CELLERY_PREFIX + "composite";
     }
 }

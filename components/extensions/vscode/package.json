@@ -28,12 +28,21 @@
 			"command": "celleryExtension.build",
 			"title": "Cellery: Build",
 			"icon": "./resources/dark/build.svg"
+		  },
+		  {
+			"command": "celleryExtension.run",
+			"title": "Cellery: Run",
+			"icon": "./resources/dark/run.svg"
 		  }
 		],
 		"menus": {
 			"editor/title": [
 				{
 					"command": "celleryExtension.build",
+					"group": "navigation"
+				},
+				{
+					"command": "celleryExtension.run",
 					"group": "navigation"
 				}
 			]

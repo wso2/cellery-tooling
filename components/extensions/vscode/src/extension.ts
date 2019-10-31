@@ -16,32 +16,18 @@
  * under the License.
  */
 
-import * as os from "os";
 import * as vscode from "vscode";
+import commands from "./Commands";
 import Constants from "./constants";
 import ExtensionUtils from "./utils/ExtensionUtils";
 
 export const activate = (context: vscode.ExtensionContext) => {
     try {
         ExtensionUtils.setupBalLangServerPlugins(context.extensionPath);
-        const commandHandler = (command: string) => async() => {
-            const cellName = await vscode.window.showInputBox({
-                placeHolder: `${Constants.ORG_NAME}/
-            ${Constants.IMAGE_NAME}:${Constants.VERSION}`,
-            });
-            const file = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-            const cwd = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri : null;
-            if (cellName && file && cwd) {
-                const celleryCommand = `${Constants.CELLERY_KEYWORD} ${command} ${file} ${cellName}`;
-                const terminal = vscode.window.createTerminal({ name: command, cwd: cwd});
-                terminal.show(true);
-                if (file !== null) {
-                    terminal.sendText(celleryCommand);
-                }
-            }
-        };
         context.subscriptions.push(vscode.commands.registerCommand(Constants.commands.CELLERY_BUILD,
-                                                                   commandHandler("build")));
+                                                                   commands.buildCommandHandler));
+        context.subscriptions.push(vscode.commands.registerCommand(Constants.commands.CELLERY_RUN,
+                                                                   commands.runCommandHandler));
     } catch (error) {
         vscode.window.showErrorMessage("Failed to install Cellery code completion plugins");
         throw error;

@@ -30,6 +30,8 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -37,6 +39,7 @@ import java.util.zip.ZipFile;
  * Cellery Image Manager for fetching and extracting information from Images.
  */
 public class ImageManager {
+    private static final Executor executor = Executors.newWorkStealingPool();
     private static final Gson gson = new Gson();
     private static final ImageManager instance = new ImageManager();
     private final Map<String, Image> images = new ConcurrentHashMap<>();
@@ -68,20 +71,48 @@ public class ImageManager {
         private Map<String, String> ingressKeys;
 
         private Image(String orgName, String imageName, String version) {
-            this.resolve(orgName, imageName, version);
+            File cellImage = resolveImageFile(orgName, imageName, version);
+            if (cellImage.exists()) {
+                extractInformationFromImage(cellImage);
+            } else {
+                pullImage(orgName, imageName, version);
+            }
         }
 
         public Map<String, String> getReferenceIngressKeys() {
             return ingressKeys;
         }
 
-        private void resolve(String orgName, String imageName, String version) {
-            File cellImage = resolveImageFile(orgName, imageName, version);
-            if (cellImage.exists()) {
-                extractInformationFromImage(cellImage);
-            }
+        /**
+         * Pull an image from the Registry.
+         *
+         * @param orgName The name of the organization the image belogns to
+         * @param imageName The name of the image
+         * @param version The version of the image
+         */
+        private void pullImage(String orgName, String imageName, String version) {
+            executor.execute(() -> {
+                try {
+                    Process process = Runtime.getRuntime()
+                            .exec(String.format(Constants.CELLERY_PULL_COMMAND, orgName, imageName, version));
+                    int exitCode = process.waitFor();
+                    if (exitCode == 0) {
+                        File cellImage = resolveImageFile(orgName, imageName, version);
+                        extractInformationFromImage(cellImage);
+                    } else {
+                        logger.error("Failed to pull Cellery Image with exit code " + exitCode);
+                    }
+                } catch (IOException | InterruptedException e) {
+                    logger.error("Failed to fetch image " + orgName + "/" + imageName + ":" + version, e);
+                }
+            });
         }
 
+        /**
+         * Extract information from the image.
+         *
+         * @param cellImage The cell image file from which the information should be extracted
+         */
         private void extractInformationFromImage(File cellImage) {
             try (ZipFile cellImageZip = new ZipFile(cellImage)) {
                 ZipEntry zipEntry = cellImageZip.getEntry(Constants.CELLERY_IMAGE_REFERENCE_FILE);
@@ -93,6 +124,14 @@ public class ImageManager {
             }
         }
 
+        /**
+         * Resolve the location of the image file in the local repository.
+         *
+         * @param orgName The name of the organization the image belongs to
+         * @param imageName The name of the image
+         * @param version The version of the image
+         * @return The image file
+         */
         private File resolveImageFile(String orgName, String imageName, String version) {
             return new File(Constants.LOCAL_REPO_DIRECTORY + File.separator + orgName
                     + File.separator + imageName + File.separator + version + File.separator

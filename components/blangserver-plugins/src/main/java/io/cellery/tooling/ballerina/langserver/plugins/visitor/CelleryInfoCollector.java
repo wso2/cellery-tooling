@@ -108,6 +108,7 @@ public class CelleryInfoCollector extends TreeVisitor {
                 BLangSimpleVarRef recordKey = (BLangSimpleVarRef) recordKeyValue.getKey();
                 Image image = null;
                 if (recordKeyValue.getValue() instanceof BLangRecordLiteral) {
+                    // Extracting dependency specified as record {org: string, name: string, ver: string}
                     BLangRecordLiteral imageRecordLiteral = (BLangRecordLiteral) recordKeyValue.getValue();
                     BLangExpression orgNameExpression = Utils.getFieldValue(imageRecordLiteral,
                             Component.DEPENDENCIES_IMAGE_ORG_FIELD_NAME);
@@ -124,6 +125,7 @@ public class CelleryInfoCollector extends TreeVisitor {
                                 ((BLangLiteral) versionExpression).getValue().toString());
                     }
                 } else if (recordKeyValue.getValue() instanceof BLangLiteral) {
+                    // Extracting dependency specified as string image FQN (org/name:ver)
                     String imageFQN = ((BLangLiteral) recordKeyValue.getValue()).getValue().toString();
                     String[] versionSplit = imageFQN.split(":");
                     if (versionSplit.length == 2) {

@@ -24,7 +24,6 @@ import java.io.File;
  * Cellery Ballerina Language Server related constants.
  */
 public class Constants {
-
     public static final String CELLERY_PACKAGE_ORG_NAME = "celleryio";
     public static final String CELLERY_PACKAGE_NAME = "cellery";
     public static final String CELLERY_COMPONENT_TYPE = "Component";

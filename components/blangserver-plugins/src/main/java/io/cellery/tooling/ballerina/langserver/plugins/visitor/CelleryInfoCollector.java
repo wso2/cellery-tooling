@@ -18,6 +18,10 @@
 
 package io.cellery.tooling.ballerina.langserver.plugins.visitor;
 
+import io.cellery.tooling.ballerina.langserver.plugins.Constants;
+import io.cellery.tooling.ballerina.langserver.plugins.ImageManager;
+import io.cellery.tooling.ballerina.langserver.plugins.ImageManager.Image;
+import io.cellery.tooling.ballerina.langserver.plugins.Utils;
 import org.ballerinalang.langserver.common.CommonKeys;
 import org.ballerinalang.langserver.compiler.LSContext;
 import org.ballerinalang.langserver.completions.SymbolInfo;
@@ -26,10 +30,12 @@ import org.wso2.ballerinalang.compiler.semantics.model.types.BRecordType;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangExpression;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangLiteral;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangRecordLiteral;
+import org.wso2.ballerinalang.compiler.tree.expressions.BLangRecordLiteral.BLangRecordKeyValue;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangSimpleVarRef;
 import org.wso2.ballerinalang.compiler.tree.statements.BLangSimpleVariableDef;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,8 +44,8 @@ import java.util.stream.Collectors;
  * Ballerina Lang Node visitor for collecting Cellery related information.
  */
 public class CelleryInfoCollector extends TreeVisitor {
-    private Map<String, Component> components;
-    private Set<String> visibleVariables;
+    private final Map<String, Component> components;
+    private final Set<String> visibleVariables;
 
     public CelleryInfoCollector(LSContext lsContext) {
         super(lsContext);
@@ -54,23 +60,86 @@ public class CelleryInfoCollector extends TreeVisitor {
     public void visit(BLangSimpleVariableDef simpleVariableDef) {
         BLangExpression initialExpression = simpleVariableDef.getVariable().getInitialExpression();
         String variableName = simpleVariableDef.getVariable().getName().getValue();
-        if (isVisible(variableName) && initialExpression instanceof BLangRecordLiteral) {
+        if (isVisible(variableName) && Utils.isRecordType(initialExpression, Constants.CELLERY_COMPONENT_TYPE)) {
+            BLangRecordLiteral recordLiteral = (BLangRecordLiteral) initialExpression;
             Component component = components.computeIfAbsent(variableName, k -> new Component());
 
-            // Extracting information about the useful fields in the component
-            BLangRecordLiteral recordLiteral = (BLangRecordLiteral) initialExpression;
-            for (BLangRecordLiteral.BLangRecordKeyValue keyValuePair : recordLiteral.getKeyValuePairs()) {
-                if (keyValuePair.getKey() instanceof BLangSimpleVarRef) {
-                    BLangSimpleVarRef fieldNameRef = (BLangSimpleVarRef) keyValuePair.getKey();
-                    if (Component.NAME_FIELD_NAME.equals(fieldNameRef.getVariableName().getValue())
-                            && keyValuePair.getValue() instanceof BLangLiteral) {
-                        Object fieldValue = ((BLangLiteral) keyValuePair.getValue()).getValue();
-                        component.setName(fieldValue.toString());
-                    }
+            // Extracting component name
+            BLangExpression name = Utils.getFieldValue(recordLiteral, Component.NAME_FIELD_NAME);
+            if (name instanceof BLangLiteral) {
+                component.setName(((BLangLiteral) name).getValue().toString());
+            }
+
+            // Extracting dependencies information
+            BLangExpression dependencies = Utils.getFieldValue(recordLiteral, Component.DEPENDENCIES_FIELD_NAME);
+            if (Utils.isRecordType(dependencies, Constants.CELLERY_DEPENDENCIES_TYPE)) {
+                Map<String, Image> componentDependencies = new HashMap<>();
+                // Extracting cell dependencies from Component.dependencies.cells
+                BLangExpression cellDependencies = Utils.getFieldValue((BLangRecordLiteral) dependencies,
+                        Component.DEPENDENCIES_CELLS_FIELD_NAME);
+                if (cellDependencies instanceof BLangRecordLiteral) {
+                    componentDependencies.putAll(
+                            extractDependencyInformation((BLangRecordLiteral) cellDependencies));
                 }
+                // Extracting composite dependencies from Component.dependencies.composites
+                BLangExpression compositeDependencies = Utils.getFieldValue((BLangRecordLiteral) dependencies,
+                        Component.DEPENDENCIES_COMPOSITES_FIELD_NAME);
+                if (compositeDependencies instanceof BLangRecordLiteral) {
+                    componentDependencies.putAll(
+                            extractDependencyInformation((BLangRecordLiteral) compositeDependencies));
+                }
+                component.setDependencies(componentDependencies);
             }
         }
         super.visit(simpleVariableDef);
+    }
+
+    /**
+     * Extract the component dependencies from the cell/composite dependencies map.
+     *
+     * @param recordLiteral The record (map)
+     * @return The component dependencies map
+     */
+    private Map<String, Image> extractDependencyInformation(BLangRecordLiteral recordLiteral) {
+        List<BLangRecordKeyValue> recordEntries = recordLiteral.getKeyValuePairs();
+        Map<String, Image> componentDependencies = new HashMap<>();
+        for (BLangRecordKeyValue recordKeyValue : recordEntries) {
+            if (recordKeyValue.getKey() instanceof BLangSimpleVarRef) {
+                BLangSimpleVarRef recordKey = (BLangSimpleVarRef) recordKeyValue.getKey();
+                Image image = null;
+                if (recordKeyValue.getValue() instanceof BLangRecordLiteral) {
+                    BLangRecordLiteral imageRecordLiteral = (BLangRecordLiteral) recordKeyValue.getValue();
+                    BLangExpression orgNameExpression = Utils.getFieldValue(imageRecordLiteral,
+                            Component.DEPENDENCIES_IMAGE_ORG_FIELD_NAME);
+                    BLangExpression imageNameExpression = Utils.getFieldValue(imageRecordLiteral,
+                            Component.DEPENDENCIES_IMAGE_NAME_FIELD_NAME);
+                    BLangExpression versionExpression = Utils.getFieldValue(imageRecordLiteral,
+                            Component.DEPENDENCIES_IMAGE_VERSION_FIELD_NAME);
+                    if (orgNameExpression instanceof BLangLiteral
+                            && imageNameExpression instanceof BLangLiteral
+                            && versionExpression instanceof BLangLiteral) {
+                        image = ImageManager.getInstance().getImage(
+                                ((BLangLiteral) orgNameExpression).getValue().toString(),
+                                ((BLangLiteral) imageNameExpression).getValue().toString(),
+                                ((BLangLiteral) versionExpression).getValue().toString());
+                    }
+                } else if (recordKeyValue.getValue() instanceof BLangLiteral) {
+                    String imageFQN = ((BLangLiteral) recordKeyValue.getValue()).getValue().toString();
+                    String[] versionSplit = imageFQN.split(":");
+                    if (versionSplit.length == 2) {
+                        String[] imageSplit = versionSplit[0].split("/");
+                        if (imageSplit.length == 2) {
+                            image = ImageManager.getInstance()
+                                    .getImage(imageSplit[0], imageSplit[1], versionSplit[1]);
+                        }
+                    }
+                }
+                if (image != null) {
+                    componentDependencies.put(recordKey.getVariableName().getValue(), image);
+                }
+            }
+        }
+        return componentDependencies;
     }
 
     /**

@@ -20,7 +20,14 @@ package io.cellery.tooling.ballerina.langserver.plugins;
 
 import org.ballerinalang.langserver.common.utils.CommonUtil;
 import org.ballerinalang.langserver.compiler.LSContext;
+import org.wso2.ballerinalang.compiler.semantics.model.symbols.BTypeSymbol;
+import org.wso2.ballerinalang.compiler.semantics.model.types.BType;
 import org.wso2.ballerinalang.compiler.tree.BLangImportPackage;
+import org.wso2.ballerinalang.compiler.tree.expressions.BLangExpression;
+import org.wso2.ballerinalang.compiler.tree.expressions.BLangRecordLiteral;
+import org.wso2.ballerinalang.compiler.tree.expressions.BLangSimpleVarRef;
+
+import java.util.Objects;
 
 /**
  * Cellery Lang Server plugin utilities.
@@ -38,12 +45,62 @@ public class Utils {
         for (BLangImportPackage anImport : CommonUtil.getCurrentFileImports(context)) {
             if (anImport.getPackageName().size() == 1) {
                 String packageName = anImport.getPackageName().get(0).getValue();
-                if (Constants.CELLERY_PACKAGE_ORG_NAME.equals(anImport.getOrgName().getValue()) &&
-                        Constants.CELLERY_PACKAGE_NAME.equals(packageName)) {
+                if (Constants.CELLERY_PACKAGE_ORG_NAME.equals(anImport.getOrgName().getValue())
+                        && Constants.CELLERY_PACKAGE_NAME.equals(packageName)) {
                     hasCelleryImport = true;
                 }
             }
         }
         return hasCelleryImport;
+    }
+
+    /**
+     * Check if the ballerina type is equal to the Cellery type name.
+     *
+     * @param bLangExpression The ballerina expression of which the type should be checked
+     * @param typeName The name of the Cellery type
+     * @return True if the type if equal
+     */
+    public static boolean isRecordType(BLangExpression bLangExpression, String typeName) {
+        boolean isCorrectType = false;
+        if (bLangExpression instanceof BLangRecordLiteral) {
+            isCorrectType = isType(((BLangRecordLiteral) bLangExpression).type, typeName);
+        }
+        return isCorrectType;
+    }
+
+    /**
+     * Check if the ballerina type is equal to the Cellery type name.
+     *
+     * @param bType The ballerina type of which the type should be checked
+     * @param typeName The name of the Cellery type
+     * @return True if the type if equal
+     */
+    public static boolean isType(BType bType, String typeName) {
+        BTypeSymbol tSymbol = bType.tsymbol;
+        return Constants.CELLERY_PACKAGE_ORG_NAME.equals(tSymbol.pkgID.getOrgName().getValue())
+                && Constants.CELLERY_PACKAGE_NAME.equals(tSymbol.pkgID.getName().getValue())
+                && Objects.equals(typeName, tSymbol.name.getValue());
+    }
+
+    /**
+     * Get the field value of a Ballerina record literal.
+     *
+     * @param recordLiteral The record literal from which the value should be extracted
+     * @param fieldName The name of the field
+     * @return The ballerina literal value extracted
+     */
+    public static BLangExpression getFieldValue(BLangRecordLiteral recordLiteral, String fieldName) {
+        BLangExpression fieldValue = null;
+        for (BLangRecordLiteral.BLangRecordKeyValue keyValuePair : recordLiteral.getKeyValuePairs()) {
+            if (keyValuePair.getKey() instanceof BLangSimpleVarRef) {
+                BLangSimpleVarRef fieldNameRef = (BLangSimpleVarRef) keyValuePair.getKey();
+                if (Objects.equals(fieldNameRef.getVariableName().getValue(), fieldName)) {
+                    fieldValue = keyValuePair.getValue();
+                    break;
+                }
+            }
+        }
+        return fieldValue;
     }
 }

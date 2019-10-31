@@ -34,6 +34,7 @@ public class Constants {
     public static final String LOCAL_REPO_DIRECTORY = System.getProperty("user.home") + File.separator + ".cellery"
             + File.separator + "repo";
     public static final String CELLERY_IMAGE_REFERENCE_FILE = "artifacts/ref/reference.json";
+    public static final String CELLERY_PULL_COMMAND = "cellery pull %s/%s:%s";
 
     /**
      * Completion Providers related constants.

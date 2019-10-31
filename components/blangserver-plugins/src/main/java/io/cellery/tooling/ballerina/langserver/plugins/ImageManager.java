@@ -25,9 +25,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
@@ -59,7 +63,13 @@ public class ImageManager {
      */
     public Image getImage(String orgName, String imageName, String version) {
         String imageFQN = orgName + "/" + imageName + ":" + version;
-        return images.computeIfAbsent(imageFQN, k -> new Image(orgName, imageName, version));
+        Image image = images.computeIfAbsent(imageFQN, k -> new Image(orgName, imageName, version));
+
+        // Ensuring that the actual image and the last image of which information was collected is equal
+        if (!Arrays.equals(image.getLastKnownDigest(), image.getCurrentDigest())) {
+            image.extractInformationFromImage();
+        }
+        return image;
     }
 
     /**
@@ -68,19 +78,47 @@ public class ImageManager {
     public static class Image {
         private static final Logger logger = LoggerFactory.getLogger(Image.class);
         private static final Type referenceTypeToken = new ReferenceTypeToken().getType();
+
+        private File imageFile;
+        private byte[] lastKnownDigest;
         private Map<String, String> ingressKeys;
 
         private Image(String orgName, String imageName, String version) {
-            File cellImage = resolveImageFile(orgName, imageName, version);
-            if (cellImage.exists()) {
-                extractInformationFromImage(cellImage);
+            this.lastKnownDigest = new byte[0];
+            this.imageFile = new File(Constants.LOCAL_REPO_DIRECTORY + File.separator + orgName
+                    + File.separator + imageName + File.separator + version + File.separator
+                    + imageName + Constants.CELLERY_IMAGE_EXTENSION);
+
+            // Collecting image information (pulling the image from Cellery Hub if necessary)
+            if (imageFile.exists()) {
+                extractInformationFromImage();
             } else {
                 pullImage(orgName, imageName, version);
             }
         }
 
-        public Map<String, String> getReferenceIngressKeys() {
+        public synchronized Map<String, String> getReferenceIngressKeys() {
             return ingressKeys;
+        }
+
+        public synchronized byte[] getLastKnownDigest() {
+            return lastKnownDigest.clone();
+        }
+
+        /**
+         * Get the digest of an Cell Image file.
+         *
+         * @return The digest of the Cellery Image
+         */
+        private byte[] getCurrentDigest() {
+            byte[] digest;
+            try {
+                MessageDigest md5 = MessageDigest.getInstance("MD5");
+                digest = md5.digest(IOUtils.toByteArray(new FileInputStream(imageFile)));
+            } catch (IOException | NoSuchAlgorithmException e) {
+                digest = new byte[0];
+            }
+            return digest;
         }
 
         /**
@@ -97,8 +135,7 @@ public class ImageManager {
                             .exec(String.format(Constants.CELLERY_PULL_COMMAND, orgName, imageName, version));
                     int exitCode = process.waitFor();
                     if (exitCode == 0) {
-                        File cellImage = resolveImageFile(orgName, imageName, version);
-                        extractInformationFromImage(cellImage);
+                        extractInformationFromImage();
                     } else {
                         logger.error("Failed to pull Cellery Image with exit code " + exitCode);
                     }
@@ -110,32 +147,17 @@ public class ImageManager {
 
         /**
          * Extract information from the image.
-         *
-         * @param cellImage The cell image file from which the information should be extracted
          */
-        private void extractInformationFromImage(File cellImage) {
-            try (ZipFile cellImageZip = new ZipFile(cellImage)) {
-                ZipEntry zipEntry = cellImageZip.getEntry(Constants.CELLERY_IMAGE_REFERENCE_FILE);
-                String referenceJsonString = IOUtils.toString(cellImageZip.getInputStream(zipEntry),
+        private synchronized void extractInformationFromImage() {
+            try (ZipFile celleryImageZip = new ZipFile(imageFile)) {
+                ZipEntry zipEntry = celleryImageZip.getEntry(Constants.CELLERY_IMAGE_REFERENCE_FILE);
+                String referenceJsonString = IOUtils.toString(celleryImageZip.getInputStream(zipEntry),
                         StandardCharsets.UTF_8);
                 ingressKeys = gson.fromJson(referenceJsonString, referenceTypeToken);
+                lastKnownDigest = getCurrentDigest();
             } catch (IOException e) {
-                logger.error("Failed to read Cell Image zip " + cellImage.getAbsolutePath(), e);
+                logger.error("Failed to read Cell Image zip " + imageFile.getAbsolutePath(), e);
             }
-        }
-
-        /**
-         * Resolve the location of the image file in the local repository.
-         *
-         * @param orgName The name of the organization the image belongs to
-         * @param imageName The name of the image
-         * @param version The version of the image
-         * @return The image file
-         */
-        private File resolveImageFile(String orgName, String imageName, String version) {
-            return new File(Constants.LOCAL_REPO_DIRECTORY + File.separator + orgName
-                    + File.separator + imageName + File.separator + version + File.separator
-                    + imageName + Constants.CELLERY_IMAGE_EXTENSION);
         }
 
         /**

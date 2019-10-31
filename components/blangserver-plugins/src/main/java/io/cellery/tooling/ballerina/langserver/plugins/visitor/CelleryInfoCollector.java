@@ -60,7 +60,8 @@ public class CelleryInfoCollector extends TreeVisitor {
     public void visit(BLangSimpleVariableDef simpleVariableDef) {
         BLangExpression initialExpression = simpleVariableDef.getVariable().getInitialExpression();
         String variableName = simpleVariableDef.getVariable().getName().getValue();
-        if (isVisible(variableName) && Utils.isRecordType(initialExpression, Constants.CELLERY_COMPONENT_TYPE)) {
+        if (visibleVariables.contains(variableName)
+                && Utils.isRecordType(initialExpression, Constants.CELLERY_COMPONENT_TYPE)) {
             BLangRecordLiteral recordLiteral = (BLangRecordLiteral) initialExpression;
             Component component = components.computeIfAbsent(variableName, k -> new Component());
 
@@ -142,16 +143,6 @@ public class CelleryInfoCollector extends TreeVisitor {
             }
         }
         return componentDependencies;
-    }
-
-    /**
-     * Check if a variable is visible in the current context.
-     *
-     * @param variableName The name of the variable
-     * @return True if the variable is visible
-     */
-    private boolean isVisible(String variableName) {
-        return visibleVariables.contains(variableName);
     }
 
     public Map<String, Component> getComponents() {

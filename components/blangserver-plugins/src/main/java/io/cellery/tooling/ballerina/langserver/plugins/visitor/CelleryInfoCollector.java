@@ -26,8 +26,10 @@ import org.ballerinalang.langserver.common.CommonKeys;
 import org.ballerinalang.langserver.compiler.LSContext;
 import org.ballerinalang.langserver.completions.SymbolInfo;
 import org.ballerinalang.langserver.completions.TreeVisitor;
+import org.ballerinalang.model.tree.expressions.ExpressionNode;
 import org.wso2.ballerinalang.compiler.semantics.model.types.BRecordType;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangExpression;
+import org.wso2.ballerinalang.compiler.tree.expressions.BLangInvocation;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangLiteral;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangRecordLiteral;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangRecordLiteral.BLangRecordKeyValue;
@@ -45,11 +47,13 @@ import java.util.stream.Collectors;
  */
 public class CelleryInfoCollector extends TreeVisitor {
     private final Map<String, Component> components;
+    private final Map<String, Image> references;
     private final Set<String> visibleVariables;
 
     public CelleryInfoCollector(LSContext lsContext) {
         super(lsContext);
         components = new HashMap<>();
+        references = new HashMap<>();
         visibleVariables = lsContext.get(CommonKeys.VISIBLE_SYMBOLS_KEY).stream()
                 .filter(symbolInfo -> symbolInfo.getScopeEntry().symbol.type instanceof BRecordType)
                 .map(SymbolInfo::getSymbolName)
@@ -58,38 +62,53 @@ public class CelleryInfoCollector extends TreeVisitor {
 
     @Override
     public void visit(BLangSimpleVariableDef simpleVariableDef) {
-        BLangExpression initialExpression = simpleVariableDef.getVariable().getInitialExpression();
+        BLangExpression assignedExpression = simpleVariableDef.getVariable().getInitialExpression();
         String variableName = simpleVariableDef.getVariable().getName().getValue();
-        if (visibleVariables.contains(variableName)
-                && Utils.isRecordType(initialExpression, Constants.CELLERY_COMPONENT_TYPE)) {
-            BLangRecordLiteral recordLiteral = (BLangRecordLiteral) initialExpression;
-            Component component = components.computeIfAbsent(variableName, k -> new Component());
+        if (visibleVariables.contains(variableName)) {
+            if (Utils.isRecordType(assignedExpression, Constants.CELLERY_COMPONENT_TYPE)) {
+                BLangRecordLiteral recordLiteral = (BLangRecordLiteral) assignedExpression;
+                Component component = components.computeIfAbsent(variableName, k -> new Component());
 
-            // Extracting component name
-            BLangExpression name = Utils.getFieldValue(recordLiteral, Component.NAME_FIELD_NAME);
-            if (name instanceof BLangLiteral) {
-                component.setName(((BLangLiteral) name).getValue().toString());
-            }
+                // Extracting component name
+                BLangExpression name = Utils.getFieldValue(recordLiteral, Component.NAME_FIELD_NAME);
+                if (name instanceof BLangLiteral) {
+                    component.setName(((BLangLiteral) name).getValue().toString());
+                }
 
-            // Extracting dependencies information
-            BLangExpression dependencies = Utils.getFieldValue(recordLiteral, Component.DEPENDENCIES_FIELD_NAME);
-            if (Utils.isRecordType(dependencies, Constants.CELLERY_DEPENDENCIES_TYPE)) {
-                Map<String, Image> componentDependencies = new HashMap<>();
-                // Extracting cell dependencies from Component.dependencies.cells
-                BLangExpression cellDependencies = Utils.getFieldValue((BLangRecordLiteral) dependencies,
-                        Component.DEPENDENCIES_CELLS_FIELD_NAME);
-                if (cellDependencies instanceof BLangRecordLiteral) {
-                    componentDependencies.putAll(
-                            extractDependencyInformation((BLangRecordLiteral) cellDependencies));
+                // Extracting dependencies information
+                BLangExpression dependencies = Utils.getFieldValue(recordLiteral, Component.DEPENDENCIES_FIELD_NAME);
+                if (Utils.isRecordType(dependencies, Constants.CELLERY_DEPENDENCIES_TYPE)) {
+                    Map<String, Image> componentDependencies = new HashMap<>();
+                    // Extracting cell dependencies from Component.dependencies.cells
+                    BLangExpression cellDependencies = Utils.getFieldValue((BLangRecordLiteral) dependencies,
+                            Component.DEPENDENCIES_CELLS_FIELD_NAME);
+                    if (cellDependencies instanceof BLangRecordLiteral) {
+                        componentDependencies.putAll(
+                                extractDependencyInformation((BLangRecordLiteral) cellDependencies));
+                    }
+                    // Extracting composite dependencies from Component.dependencies.composites
+                    BLangExpression compositeDependencies = Utils.getFieldValue((BLangRecordLiteral) dependencies,
+                            Component.DEPENDENCIES_COMPOSITES_FIELD_NAME);
+                    if (compositeDependencies instanceof BLangRecordLiteral) {
+                        componentDependencies.putAll(
+                                extractDependencyInformation((BLangRecordLiteral) compositeDependencies));
+                    }
+                    component.setDependencies(componentDependencies);
                 }
-                // Extracting composite dependencies from Component.dependencies.composites
-                BLangExpression compositeDependencies = Utils.getFieldValue((BLangRecordLiteral) dependencies,
-                        Component.DEPENDENCIES_COMPOSITES_FIELD_NAME);
-                if (compositeDependencies instanceof BLangRecordLiteral) {
-                    componentDependencies.putAll(
-                            extractDependencyInformation((BLangRecordLiteral) compositeDependencies));
+            } else if (Utils.isInvocationReturnType(assignedExpression, Constants.CELLERY_REFERENCE_TYPE)) {
+                // Resolving references at definition
+                BLangInvocation invocation = (BLangInvocation) assignedExpression;
+                List<? extends ExpressionNode> argumentExpressions = invocation.getArgumentExpressions();
+                ExpressionNode firstArgument = argumentExpressions.get(0);
+                ExpressionNode secondArgument = argumentExpressions.get(1);
+                if (firstArgument instanceof BLangSimpleVarRef && secondArgument instanceof BLangLiteral) {
+                    String componentVar = ((BLangSimpleVarRef) firstArgument).getVariableName().getValue();
+                    String alias = ((BLangLiteral) secondArgument).getValue().toString();
+                    Component component = components.get(componentVar);
+                    if (component != null) {
+                        references.put(variableName, component.getDependencies().get(alias));
+                    }
                 }
-                component.setDependencies(componentDependencies);
             }
         }
         super.visit(simpleVariableDef);
@@ -147,5 +166,9 @@ public class CelleryInfoCollector extends TreeVisitor {
 
     public Map<String, Component> getComponents() {
         return components;
+    }
+
+    public Map<String, Image> getReferences() {
+        return references;
     }
 }

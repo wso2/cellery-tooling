@@ -24,6 +24,7 @@ import org.wso2.ballerinalang.compiler.semantics.model.symbols.BTypeSymbol;
 import org.wso2.ballerinalang.compiler.semantics.model.types.BType;
 import org.wso2.ballerinalang.compiler.tree.BLangImportPackage;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangExpression;
+import org.wso2.ballerinalang.compiler.tree.expressions.BLangInvocation;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangRecordLiteral;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangSimpleVarRef;
 
@@ -55,7 +56,7 @@ public class Utils {
     }
 
     /**
-     * Check if the ballerina type is equal to the Cellery type name.
+     * Check if the ballerina type is equal to the Cellery record type name.
      *
      * @param bLangExpression The ballerina expression of which the type should be checked
      * @param typeName The name of the Cellery type
@@ -65,6 +66,21 @@ public class Utils {
         boolean isCorrectType = false;
         if (bLangExpression instanceof BLangRecordLiteral) {
             isCorrectType = isType(((BLangRecordLiteral) bLangExpression).type, typeName);
+        }
+        return isCorrectType;
+    }
+
+    /**
+     * Check if the ballerina type is equal to the Cellery invocation type name.
+     *
+     * @param bLangExpression The ballerina expression of which the type should be checked
+     * @param typeName The name of the Cellery type
+     * @return True if the type if equal
+     */
+    public static boolean isInvocationReturnType(BLangExpression bLangExpression, String typeName) {
+        boolean isCorrectType = false;
+        if (bLangExpression instanceof BLangInvocation) {
+            isCorrectType = isType(((BLangInvocation) bLangExpression).type, typeName);
         }
         return isCorrectType;
     }

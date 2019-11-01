@@ -79,11 +79,17 @@ public class ImageManager {
         private static final Logger logger = LoggerFactory.getLogger(Image.class);
         private static final Type referenceTypeToken = new ReferenceTypeToken().getType();
 
+        private String org;
+        private String name;
+        private String version;
         private File imageFile;
         private byte[] lastKnownDigest;
-        private Map<String, String> ingressKeys;
+        private Map<String, String> referenceKeys;
 
         private Image(String orgName, String imageName, String version) {
+            this.org = orgName;
+            this.name = imageName;
+            this.version = version;
             this.lastKnownDigest = new byte[0];
             this.imageFile = new File(Constants.LOCAL_REPO_DIRECTORY + File.separator + orgName
                     + File.separator + imageName + File.separator + version + File.separator
@@ -97,12 +103,16 @@ public class ImageManager {
             }
         }
 
-        public synchronized Map<String, String> getReferenceIngressKeys() {
-            return ingressKeys;
+        public synchronized Map<String, String> getReferenceKeys() {
+            return referenceKeys;
         }
 
         public synchronized byte[] getLastKnownDigest() {
             return lastKnownDigest.clone();
+        }
+
+        public String getFQN() {
+            return org + "/" + name + ":" + version;
         }
 
         /**
@@ -153,7 +163,7 @@ public class ImageManager {
                 ZipEntry zipEntry = celleryImageZip.getEntry(Constants.CELLERY_IMAGE_REFERENCE_FILE);
                 String referenceJsonString = IOUtils.toString(celleryImageZip.getInputStream(zipEntry),
                         StandardCharsets.UTF_8);
-                ingressKeys = gson.fromJson(referenceJsonString, referenceTypeToken);
+                referenceKeys = gson.fromJson(referenceJsonString, referenceTypeToken);
                 lastKnownDigest = getCurrentDigest();
             } catch (IOException e) {
                 logger.error("Failed to read Cell Image zip " + imageFile.getAbsolutePath(), e);

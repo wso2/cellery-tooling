@@ -28,6 +28,7 @@ public class Constants {
     public static final String CELLERY_PACKAGE_NAME = "cellery";
     public static final String CELLERY_COMPONENT_TYPE = "Component";
     public static final String CELLERY_DEPENDENCIES_TYPE = "Dependencies";
+    public static final String CELLERY_REFERENCE_TYPE = "Reference";
 
     public static final String CELLERY_IMAGE_EXTENSION = ".zip";
     public static final String LOCAL_REPO_DIRECTORY = System.getProperty("user.home") + File.separator + ".cellery"

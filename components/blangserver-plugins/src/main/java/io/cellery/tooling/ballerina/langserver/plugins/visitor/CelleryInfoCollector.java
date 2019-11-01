@@ -23,11 +23,11 @@ import io.cellery.tooling.ballerina.langserver.plugins.ImageManager;
 import io.cellery.tooling.ballerina.langserver.plugins.ImageManager.Image;
 import io.cellery.tooling.ballerina.langserver.plugins.Utils;
 import org.ballerinalang.langserver.common.CommonKeys;
+import org.ballerinalang.langserver.common.utils.CommonUtil;
 import org.ballerinalang.langserver.compiler.LSContext;
 import org.ballerinalang.langserver.completions.SymbolInfo;
 import org.ballerinalang.langserver.completions.TreeVisitor;
 import org.ballerinalang.model.tree.expressions.ExpressionNode;
-import org.wso2.ballerinalang.compiler.semantics.model.types.BRecordType;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangExpression;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangInvocation;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangLiteral;
@@ -36,10 +36,10 @@ import org.wso2.ballerinalang.compiler.tree.expressions.BLangRecordLiteral.BLang
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangSimpleVarRef;
 import org.wso2.ballerinalang.compiler.tree.statements.BLangSimpleVariableDef;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -48,16 +48,17 @@ import java.util.stream.Collectors;
 public class CelleryInfoCollector extends TreeVisitor {
     private final Map<String, Component> components;
     private final Map<String, Image> references;
-    private final Set<String> visibleVariables;
+    private final List<String> visibleVariables;
 
     public CelleryInfoCollector(LSContext lsContext) {
         super(lsContext);
         components = new HashMap<>();
         references = new HashMap<>();
-        visibleVariables = lsContext.get(CommonKeys.VISIBLE_SYMBOLS_KEY).stream()
-                .filter(symbolInfo -> symbolInfo.getScopeEntry().symbol.type instanceof BRecordType)
+        List<SymbolInfo> visibleSymbols = new ArrayList<>(lsContext.get(CommonKeys.VISIBLE_SYMBOLS_KEY));
+        visibleSymbols.removeIf(CommonUtil.invalidSymbolsPredicate());
+        visibleVariables = visibleSymbols.stream()
                 .map(SymbolInfo::getSymbolName)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -117,11 +118,11 @@ public class CelleryInfoCollector extends TreeVisitor {
     /**
      * Extract the component dependencies from the cell/composite dependencies map.
      *
-     * @param recordLiteral The record (map)
+     * @param dependencyMap The record (map)
      * @return The component dependencies map
      */
-    private Map<String, Image> extractDependencyInformation(BLangRecordLiteral recordLiteral) {
-        List<BLangRecordKeyValue> recordEntries = recordLiteral.getKeyValuePairs();
+    private Map<String, Image> extractDependencyInformation(BLangRecordLiteral dependencyMap) {
+        List<BLangRecordKeyValue> recordEntries = dependencyMap.getKeyValuePairs();
         Map<String, Image> componentDependencies = new HashMap<>();
         for (BLangRecordKeyValue recordKeyValue : recordEntries) {
             if (recordKeyValue.getKey() instanceof BLangSimpleVarRef) {

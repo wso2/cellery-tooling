@@ -34,19 +34,7 @@
 			"title": "Cellery: Run",
 			"icon": "./resources/dark/run.svg"
 		  }
-		],
-		"menus": {
-			"editor/title": [
-				{
-					"command": "celleryExtension.build",
-					"group": "navigation"
-				},
-				{
-					"command": "celleryExtension.run",
-					"group": "navigation"
-				}
-			]
-		}
+		]
 	  },
 	"scripts": {
 		"clean": "rimraf ./dist/ && rimraf ./*.vsix && rimraf ./resources/io.cellery.tooling.ballerina.langserver.plugins.jar",

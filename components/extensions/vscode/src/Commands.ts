@@ -24,7 +24,11 @@ import Constants from "./constants";
  * Cellery commands.
  */
 class Commands {
+    private static terminals: { [name: string]: vscode.Terminal } = { };
 
+    /**
+     * cellery build command handler used by the function 'registerCommand'
+     */
     public static buildCommandHandler = async() => {
         const cellName = await vscode.window.showInputBox({
             placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
@@ -34,12 +38,21 @@ class Commands {
         const cwd = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri : null;
         if (cellName && file && cwd) {
             const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;
+            const assocTerminal = Commands.terminals.build;
+            if (Commands.terminals.build) {
+                delete Commands.terminals.build;
+                assocTerminal.dispose();
+            }
             const terminal = vscode.window.createTerminal({ name: "build", cwd: cwd});
+            Commands.terminals.build = terminal;
             terminal.show(true);
             terminal.sendText(buildCommand);
         }
     }
 
+    /**
+     * cellery run command handler used by the function 'registerCommand'
+     */
     public static runCommandHandler = async() => {
         const cellName = await vscode.window.showInputBox({
             placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
@@ -55,7 +68,13 @@ class Commands {
             const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;
             const runCommand = `${Constants.CELLERY_RUN_COMMAND} ${cellName} -n ${instanceName} -d`;
             const logCommand = `${Constants.CELLERY_LOGS_COMMAND} ${instanceName}`;
+            const assocTerminal = Commands.terminals.run;
+            if (Commands.terminals.run) {
+                delete Commands.terminals.run;
+                assocTerminal.dispose();
+            }
             const terminal = vscode.window.createTerminal({ name: "run", cwd: cwd});
+            Commands.terminals.run = terminal;
             terminal.show(true);
             terminal.sendText(`${buildCommand} && ${runCommand} && ${logCommand}`);
         }

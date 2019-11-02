@@ -19,10 +19,15 @@
 package io.cellery.tooling.ballerina.langserver.plugins.completions;
 
 import io.cellery.tooling.ballerina.langserver.plugins.ImageManager.Image;
+import io.cellery.tooling.ballerina.langserver.plugins.visitor.CelleryKeys;
+import io.cellery.tooling.ballerina.langserver.plugins.visitor.CelleryTreeVisitor;
+import org.ballerinalang.langserver.compiler.DocumentServiceKeys;
+import org.ballerinalang.langserver.compiler.LSContext;
 import org.ballerinalang.langserver.completions.util.ItemResolverConstants;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.MarkupContent;
+import org.wso2.ballerinalang.compiler.tree.BLangNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +37,17 @@ import java.util.Map;
  * Cellery Lang Server plugin Completions related utilities.
  */
 public class CompletionUtils {
+
+    /**
+     * Add Cellery specific information to the language server context.
+     */
+    public static synchronized void addCelleryInfoToContext(LSContext context) {
+        if (context.get(CelleryKeys.COMPONENTS) == null) {  // Ensuring that Cellery visitor is used only once
+            BLangNode packageNode = context.get(DocumentServiceKeys.CURRENT_BLANG_PACKAGE_CONTEXT_KEY);
+            CelleryTreeVisitor celleryTreeVisitor = new CelleryTreeVisitor(context);
+            packageNode.accept(celleryTreeVisitor);
+        }
+    }
 
     /**
      * Generate ingress keys completion items list.

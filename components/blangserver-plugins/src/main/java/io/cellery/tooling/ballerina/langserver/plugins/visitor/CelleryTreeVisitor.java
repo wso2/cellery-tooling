@@ -45,18 +45,18 @@ import java.util.stream.Collectors;
 /**
  * Ballerina Lang Node visitor for collecting Cellery related information.
  */
-public class CelleryInfoCollector extends TreeVisitor {
-    private final Map<String, Component> components;
-    private final Map<String, Image> references;
+public class CelleryTreeVisitor extends TreeVisitor {
     private final List<String> visibleVariables;
+    private final LSContext lsContext;
 
-    public CelleryInfoCollector(LSContext lsContext) {
+    public CelleryTreeVisitor(LSContext lsContext) {
         super(lsContext);
-        components = new HashMap<>();
-        references = new HashMap<>();
+        this.lsContext = lsContext;
+        this.lsContext.put(CelleryKeys.COMPONENTS, new HashMap<>());
+        this.lsContext.put(CelleryKeys.IMAGE_REFERENCES, new HashMap<>());
         List<SymbolInfo> visibleSymbols = new ArrayList<>(lsContext.get(CommonKeys.VISIBLE_SYMBOLS_KEY));
         visibleSymbols.removeIf(CommonUtil.invalidSymbolsPredicate());
-        visibleVariables = visibleSymbols.stream()
+        this.visibleVariables = visibleSymbols.stream()
                 .map(SymbolInfo::getSymbolName)
                 .collect(Collectors.toList());
     }
@@ -66,9 +66,10 @@ public class CelleryInfoCollector extends TreeVisitor {
         BLangExpression assignedExpression = simpleVariableDef.getVariable().getInitialExpression();
         String variableName = simpleVariableDef.getVariable().getName().getValue();
         if (visibleVariables.contains(variableName)) {
-            if (Utils.isRecordType(assignedExpression, Constants.CELLERY_COMPONENT_TYPE)) {
+            if (Utils.checkRecordType(assignedExpression, Constants.CELLERY_COMPONENT_TYPE)) {
                 BLangRecordLiteral recordLiteral = (BLangRecordLiteral) assignedExpression;
-                Component component = components.computeIfAbsent(variableName, k -> new Component());
+                Component component = this.lsContext.get(CelleryKeys.COMPONENTS)
+                        .computeIfAbsent(variableName, k -> new Component());
 
                 // Extracting component name
                 BLangExpression name = Utils.getFieldValue(recordLiteral, Component.NAME_FIELD_NAME);
@@ -78,7 +79,7 @@ public class CelleryInfoCollector extends TreeVisitor {
 
                 // Extracting dependencies information
                 BLangExpression dependencies = Utils.getFieldValue(recordLiteral, Component.DEPENDENCIES_FIELD_NAME);
-                if (Utils.isRecordType(dependencies, Constants.CELLERY_DEPENDENCIES_TYPE)) {
+                if (Utils.checkRecordType(dependencies, Constants.CELLERY_DEPENDENCIES_TYPE)) {
                     Map<String, Image> componentDependencies = new HashMap<>();
                     // Extracting cell dependencies from Component.dependencies.cells
                     BLangExpression cellDependencies = Utils.getFieldValue((BLangRecordLiteral) dependencies,
@@ -96,7 +97,7 @@ public class CelleryInfoCollector extends TreeVisitor {
                     }
                     component.setDependencies(componentDependencies);
                 }
-            } else if (Utils.isInvocationReturnType(assignedExpression, Constants.CELLERY_REFERENCE_TYPE)) {
+            } else if (Utils.checkInvocationReturnType(assignedExpression, Constants.CELLERY_REFERENCE_TYPE)) {
                 // Resolving references at definition
                 BLangInvocation invocation = (BLangInvocation) assignedExpression;
                 List<? extends ExpressionNode> argumentExpressions = invocation.getArgumentExpressions();
@@ -105,9 +106,10 @@ public class CelleryInfoCollector extends TreeVisitor {
                 if (firstArgument instanceof BLangSimpleVarRef && secondArgument instanceof BLangLiteral) {
                     String componentVar = ((BLangSimpleVarRef) firstArgument).getVariableName().getValue();
                     String alias = ((BLangLiteral) secondArgument).getValue().toString();
-                    Component component = components.get(componentVar);
+                    Component component = this.lsContext.get(CelleryKeys.COMPONENTS).get(componentVar);
                     if (component != null) {
-                        references.put(variableName, component.getDependencies().get(alias));
+                        this.lsContext.get(CelleryKeys.IMAGE_REFERENCES)
+                                .put(variableName, component.getDependencies().get(alias));
                     }
                 }
             }
@@ -163,13 +165,5 @@ public class CelleryInfoCollector extends TreeVisitor {
             }
         }
         return componentDependencies;
-    }
-
-    public Map<String, Component> getComponents() {
-        return components;
-    }
-
-    public Map<String, Image> getReferences() {
-        return references;
     }
 }

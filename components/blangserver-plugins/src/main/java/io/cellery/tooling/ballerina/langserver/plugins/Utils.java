@@ -62,10 +62,10 @@ public class Utils {
      * @param typeName The name of the Cellery type
      * @return True if the type if equal
      */
-    public static boolean isRecordType(BLangExpression bLangExpression, String typeName) {
+    public static boolean checkRecordType(BLangExpression bLangExpression, String typeName) {
         boolean isCorrectType = false;
         if (bLangExpression instanceof BLangRecordLiteral) {
-            isCorrectType = isType(((BLangRecordLiteral) bLangExpression).type, typeName);
+            isCorrectType = checkType(((BLangRecordLiteral) bLangExpression).type, typeName);
         }
         return isCorrectType;
     }
@@ -77,10 +77,10 @@ public class Utils {
      * @param typeName The name of the Cellery type
      * @return True if the type if equal
      */
-    public static boolean isInvocationReturnType(BLangExpression bLangExpression, String typeName) {
+    public static boolean checkInvocationReturnType(BLangExpression bLangExpression, String typeName) {
         boolean isCorrectType = false;
         if (bLangExpression instanceof BLangInvocation) {
-            isCorrectType = isType(((BLangInvocation) bLangExpression).type, typeName);
+            isCorrectType = checkType(((BLangInvocation) bLangExpression).type, typeName);
         }
         return isCorrectType;
     }
@@ -92,7 +92,7 @@ public class Utils {
      * @param typeName The name of the Cellery type
      * @return True if the type if equal
      */
-    public static boolean isType(BType bType, String typeName) {
+    public static boolean checkType(BType bType, String typeName) {
         BTypeSymbol tSymbol = bType.tsymbol;
         return Constants.CELLERY_PACKAGE_ORG_NAME.equals(tSymbol.pkgID.getOrgName().getValue())
                 && Constants.CELLERY_PACKAGE_NAME.equals(tSymbol.pkgID.getName().getValue())

@@ -23,12 +23,11 @@ import io.cellery.tooling.ballerina.langserver.plugins.ImageManager.Image;
 import io.cellery.tooling.ballerina.langserver.plugins.Utils;
 import io.cellery.tooling.ballerina.langserver.plugins.completions.CompletionUtils;
 import io.cellery.tooling.ballerina.langserver.plugins.completions.SnippetGenerator;
-import io.cellery.tooling.ballerina.langserver.plugins.visitor.CelleryInfoCollector;
+import io.cellery.tooling.ballerina.langserver.plugins.visitor.CelleryKeys;
 import org.antlr.v4.runtime.CommonToken;
 import org.ballerinalang.annotation.JavaSPIService;
 import org.ballerinalang.langserver.common.CommonKeys;
 import org.ballerinalang.langserver.common.utils.FilterUtils;
-import org.ballerinalang.langserver.compiler.DocumentServiceKeys;
 import org.ballerinalang.langserver.compiler.LSContext;
 import org.ballerinalang.langserver.completions.CompletionKeys;
 import org.ballerinalang.langserver.completions.SymbolInfo;
@@ -37,7 +36,6 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.ballerinalang.compiler.parser.antlr4.BallerinaParser;
-import org.wso2.ballerinalang.compiler.tree.BLangNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,25 +58,30 @@ public class CelleryStatementContextProvider extends StatementContextProvider {
     public List<CompletionItem> getCompletions(LSContext context) {
         List<CompletionItem> completions = new ArrayList<>();
 
-        if (Utils.hasCelleryImport(context)) {
-            Boolean forceRemovedStmt = context.get(CompletionKeys.FORCE_REMOVED_STATEMENT_WITH_PARENTHESIS_KEY);
-            if (!this.isAnnotationAccessExpression(context) && !this.isAnnotationAttachmentContext(context)
-                    && !this.inFunctionReturnParameterContext(context)
-                    && (forceRemovedStmt == null || !forceRemovedStmt)) {
-                int invocationOrDelimiterTokenType = context.get(CompletionKeys.INVOCATION_TOKEN_TYPE_KEY);
-                if (invocationOrDelimiterTokenType == -1) {
-                    completions.addAll(this.getCellerySnippetCompletions(context));
-                } else if (invocationOrDelimiterTokenType > -1) {
-                    completions.addAll(this.getCelleryFieldAccessOrInvocationCompletions(context));
+        try {
+            if (Utils.hasCelleryImport(context)) {
+                Boolean forceRemovedStmt = context.get(CompletionKeys.FORCE_REMOVED_STATEMENT_WITH_PARENTHESIS_KEY);
+                if (!this.isAnnotationAccessExpression(context) && !this.isAnnotationAttachmentContext(context)
+                        && !this.inFunctionReturnParameterContext(context)
+                        && (forceRemovedStmt == null || !forceRemovedStmt)) {
+                    CompletionUtils.addCelleryInfoToContext(context);
+                    int invocationOrDelimiterTokenType = context.get(CompletionKeys.INVOCATION_TOKEN_TYPE_KEY);
+                    if (invocationOrDelimiterTokenType == -1) {
+                        completions.addAll(this.getCellerySnippetCompletions(context));
+                    } else if (invocationOrDelimiterTokenType > -1) {
+                        completions.addAll(this.getCelleryFieldAccessOrInvocationCompletions(context));
+                    }
                 }
             }
+        } catch (Exception e) {
+            logger.error("Failed to add Statement context Cellery completions", e);
         }
 
         // Get statement context completions
         try {
             completions.addAll(super.getCompletions(context));
         } catch (Exception e) {
-            logger.error("Failed to fetch ballerina Statement context lang completions", e);
+            logger.error("Failed to add Statement context Ballerina lang completions", e);
         }
         return completions;
     }
@@ -90,14 +93,10 @@ public class CelleryStatementContextProvider extends StatementContextProvider {
      * @return {@link List<CompletionItem>} List of calculated Completion Items
      */
     private List<CompletionItem> getCellerySnippetCompletions(LSContext context) {
-        BLangNode packageNode = context.get(DocumentServiceKeys.CURRENT_BLANG_PACKAGE_CONTEXT_KEY);
-        CelleryInfoCollector celleryInfoCollector = new CelleryInfoCollector(context);
-        packageNode.accept(celleryInfoCollector);
-
         List<CompletionItem> completions = new ArrayList<>();
         completions.add(SnippetGenerator.getComponentSnippet().build(context));
-        completions.add(SnippetGenerator.getCellImageSnippet(celleryInfoCollector.getComponents()).build(context));
-        completions.add(SnippetGenerator.getCompositeImageSnippet(celleryInfoCollector.getComponents()).build(context));
+        completions.add(SnippetGenerator.getCellImageSnippet(context.get(CelleryKeys.COMPONENTS)).build(context));
+        completions.add(SnippetGenerator.getCompositeImageSnippet(context.get(CelleryKeys.COMPONENTS)).build(context));
         return completions;
     }
 
@@ -112,10 +111,6 @@ public class CelleryStatementContextProvider extends StatementContextProvider {
         List<Integer> defaultTokenTypes = context.get(CompletionKeys.LHS_DEFAULT_TOKEN_TYPES_KEY);
         int delimiter = context.get(CompletionKeys.INVOCATION_TOKEN_TYPE_KEY);
         int lastDelimiterIndex = defaultTokenTypes.lastIndexOf(delimiter);
-
-        BLangNode packageNode = context.get(DocumentServiceKeys.CURRENT_BLANG_PACKAGE_CONTEXT_KEY);
-        CelleryInfoCollector celleryInfoCollector = new CelleryInfoCollector(context);
-        packageNode.accept(celleryInfoCollector);
 
         List<CompletionItem> completions = new ArrayList<>();
         if (lastDelimiterIndex >= 8
@@ -135,16 +130,17 @@ public class CelleryStatementContextProvider extends StatementContextProvider {
             String aliasQuotedLiteral = defaultTokens.get(lastDelimiterIndex - 2).getText();
             String alias = aliasQuotedLiteral.substring(1, aliasQuotedLiteral.length() - 1);
 
-            Image image = celleryInfoCollector.getComponents().get(componentVariable).getDependencies().get(alias);
+            Image image = context.get(CelleryKeys.COMPONENTS).get(componentVariable).getDependencies().get(alias);
             completions.addAll(CompletionUtils.generateReferenceKeysCompletions(image));
         } else {
             List<SymbolInfo> visibleSymbols = new ArrayList<>(context.get(CommonKeys.VISIBLE_SYMBOLS_KEY));
             String symbolToken = defaultTokens.get(lastDelimiterIndex - 1).getText().replace("'", "");
             SymbolInfo symbol = FilterUtils.getVariableByName(symbolToken, visibleSymbols);
 
-            if (symbol != null && Utils.isType(symbol.getScopeEntry().symbol.type, Constants.CELLERY_REFERENCE_TYPE)) {
+            if (symbol != null
+                    && Utils.checkType(symbol.getScopeEntry().symbol.type, Constants.CELLERY_REFERENCE_TYPE)) {
                 // Completions on variables of type cellery:Reference
-                Image image = celleryInfoCollector.getReferences().get(symbol.getSymbolName());
+                Image image = context.get(CelleryKeys.IMAGE_REFERENCES).get(symbol.getSymbolName());
                 completions.addAll(CompletionUtils.generateReferenceKeysCompletions(image));
             }
         }

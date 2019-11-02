@@ -16,8 +16,9 @@
  * under the License.
  */
 
-package io.cellery.tooling.ballerina.langserver.plugins;
+package io.cellery.tooling.ballerina.langserver.plugins.completions;
 
+import io.cellery.tooling.ballerina.langserver.plugins.Constants;
 import io.cellery.tooling.ballerina.langserver.plugins.visitor.Component;
 import org.ballerinalang.langserver.SnippetBlock;
 import org.ballerinalang.langserver.completions.util.ItemResolverConstants;

@@ -16,9 +16,10 @@
  * under the License.
  */
 
-package io.cellery.tooling.ballerina.langserver.plugins;
+package io.cellery.tooling.ballerina.langserver.plugins.completions;
 
 import io.cellery.tooling.ballerina.langserver.plugins.ImageManager.Image;
+import org.ballerinalang.langserver.completions.util.ItemResolverConstants;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.MarkupContent;
@@ -51,6 +52,7 @@ public class CompletionUtils {
                     + "\n\n**Image:** " + imageFQN
                     + "\n\n**Key:** " + reference.getKey()
                     + "\n\n**Value:** " + reference.getValue());
+            completionItem.setDetail(ItemResolverConstants.FIELD_TYPE);
             completionItem.setDocumentation(documentation);
             completionItem.setKind(CompletionItemKind.Field);
             completions.add(completionItem);

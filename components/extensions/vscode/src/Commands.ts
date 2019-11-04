@@ -24,7 +24,7 @@ import Constants from "./constants";
  * Cellery commands.
  */
 class Commands {
-    private static terminals: { [name: string]: vscode.Terminal } = { };
+    private static readonly terminals: { [name: string]: vscode.Terminal } = { };
 
     /**
      * cellery build command handler used by the function 'registerCommand'

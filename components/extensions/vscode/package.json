@@ -24,18 +24,16 @@
 	],
 	"contributes": {
 		"commands": [
-		  {
-			"command": "celleryExtension.build",
-			"title": "Cellery: Build",
-			"icon": "./resources/dark/build.svg"
-		  },
-		  {
-			"command": "celleryExtension.run",
-			"title": "Cellery: Run",
-			"icon": "./resources/dark/run.svg"
-		  }
+			{
+				"command": "celleryExtension.build",
+				"title": "Cellery: Build"
+			},
+			{
+				"command": "celleryExtension.run",
+				"title": "Cellery: Run"
+			}
 		]
-	  },
+	},
 	"scripts": {
 		"clean": "rimraf ./dist/ && rimraf ./*.vsix && rimraf ./resources/io.cellery.tooling.ballerina.langserver.plugins.jar",
 		"format:check": "tslint -p ./ './src/**/*.ts' './test/**/*.ts' './scripts/**/*.ts'",

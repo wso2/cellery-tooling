@@ -47,15 +47,12 @@ class Commands {
         const file = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
         if (cellName && file) {
             const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;
-            const assocTerminal = Commands.terminals.build;
-            if (Commands.terminals.build) {
-                delete Commands.terminals.build;
-                assocTerminal.dispose();
+            if (!(Commands.terminals.build)) {
+                const terminal = vscode.window.createTerminal({ name: "Cellery Build", cwd: path.dirname(file)});
+                Commands.terminals.build = terminal;
             }
-            const terminal = vscode.window.createTerminal({ name: "Cellery Build", cwd: path.dirname(file)});
-            Commands.terminals.build = terminal;
-            terminal.show(true);
-            terminal.sendText(buildCommand);
+            Commands.terminals.build.show(true);
+            Commands.terminals.build.sendText(buildCommand);
             return;
         }
         vscode.window.showErrorMessage("Something went wrong while running cellery build");
@@ -78,15 +75,12 @@ class Commands {
             const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;
             const runCommand = `${Constants.CELLERY_RUN_COMMAND} ${cellName} -n ${instanceName} -d`;
             const logCommand = `${Constants.CELLERY_LOGS_COMMAND} ${instanceName}`;
-            const assocTerminal = Commands.terminals.run;
-            if (Commands.terminals.run) {
-                delete Commands.terminals.run;
-                assocTerminal.dispose();
+            if (!(Commands.terminals.run)) {
+                const terminal = vscode.window.createTerminal({ name: "Cellery Run", cwd: path.dirname(file)});
+                Commands.terminals.run = terminal;
             }
-            const terminal = vscode.window.createTerminal({ name: "Cellery Ruild", cwd: path.dirname(file)});
-            Commands.terminals.run = terminal;
-            terminal.show(true);
-            terminal.sendText(`${buildCommand} && ${runCommand} && ${logCommand}`);
+            Commands.terminals.run.show(true);
+            Commands.terminals.run.sendText(`${buildCommand} && ${runCommand} && ${logCommand}`);
             return;
         }
         vscode.window.showErrorMessage("Something went wrong while running cellery run");

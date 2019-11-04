@@ -27,9 +27,19 @@ class Commands {
     private static readonly terminals: { [name: string]: vscode.Terminal } = { };
 
     /**
+     * Register Cellery Commands
+     */
+    public static registerCelleryCommands = (context: vscode.ExtensionContext) => {
+        context.subscriptions.push(vscode.commands.registerCommand(Constants.commands.CELLERY_BUILD,
+                                                                   Commands.buildCommandHandler));
+        context.subscriptions.push(vscode.commands.registerCommand(Constants.commands.CELLERY_RUN,
+                                                                   Commands.runCommandHandler));
+    }
+
+    /**
      * cellery build command handler used by the function 'registerCommand'
      */
-    public static buildCommandHandler = async() => {
+    private static readonly buildCommandHandler = async() => {
         const cellName = await vscode.window.showInputBox({
             placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
             prompt: `Enter the cell name`,
@@ -53,7 +63,7 @@ class Commands {
     /**
      * cellery run command handler used by the function 'registerCommand'
      */
-    public static runCommandHandler = async() => {
+    private static readonly runCommandHandler = async() => {
         const cellName = await vscode.window.showInputBox({
             placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
             prompt: `Enter the cell name`,

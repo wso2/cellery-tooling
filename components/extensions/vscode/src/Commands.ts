@@ -45,15 +45,14 @@ class Commands {
             prompt: `Enter the cell name`,
         });
         const file = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-        const cwd = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri : null;
-        if (cellName && file && cwd) {
+        if (cellName && file) {
             const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;
             const assocTerminal = Commands.terminals.build;
             if (Commands.terminals.build) {
                 delete Commands.terminals.build;
                 assocTerminal.dispose();
             }
-            const terminal = vscode.window.createTerminal({ name: "Cellery Build", cwd: cwd});
+            const terminal = vscode.window.createTerminal({ name: "Cellery Build", cwd: path.dirname(file)});
             Commands.terminals.build = terminal;
             terminal.show(true);
             terminal.sendText(buildCommand);
@@ -75,8 +74,7 @@ class Commands {
             prompt: `Enter the cell instance name`,
         });
         const file = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-        const cwd = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri : null;
-        if (cellName && instanceName && file && cwd) {
+        if (cellName && instanceName && file) {
             const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;
             const runCommand = `${Constants.CELLERY_RUN_COMMAND} ${cellName} -n ${instanceName} -d`;
             const logCommand = `${Constants.CELLERY_LOGS_COMMAND} ${instanceName}`;
@@ -85,7 +83,7 @@ class Commands {
                 delete Commands.terminals.run;
                 assocTerminal.dispose();
             }
-            const terminal = vscode.window.createTerminal({ name: "Cellery Ruild", cwd: cwd});
+            const terminal = vscode.window.createTerminal({ name: "Cellery Ruild", cwd: path.dirname(file)});
             Commands.terminals.run = terminal;
             terminal.show(true);
             terminal.sendText(`${buildCommand} && ${runCommand} && ${logCommand}`);

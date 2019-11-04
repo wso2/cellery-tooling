@@ -42,20 +42,27 @@ class Commands {
     private static readonly handleBuildCommand = async() => {
         const cellName = await vscode.window.showInputBox({
             placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
-            prompt: `Enter the cell name`,
+            prompt: `Enter the image name`,
         });
         const file = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
         if (cellName && file) {
             const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;
             if (!(Commands.terminals.build)) {
-                const terminal = vscode.window.createTerminal({ name: "Cellery Build", cwd: path.dirname(file)});
-                Commands.terminals.build = terminal;
+                Commands.terminals.build = vscode.window.createTerminal({
+                    name: "Cellery Build",
+                    cwd: path.dirname(file),
+                });
             }
             Commands.terminals.build.show(true);
             Commands.terminals.build.sendText(buildCommand);
-            return;
+        } else {
+            const errorMessage: string = "Unable to run cellery build";
+            if (!file) {
+                vscode.window.showErrorMessage(`${errorMessage}, source file not found`);
+            } else if (!cellName) {
+                vscode.window.showErrorMessage(`${errorMessage}, cell name not found`);
+            }
         }
-        vscode.window.showErrorMessage("Something went wrong while running cellery build");
     }
 
     /**
@@ -64,11 +71,12 @@ class Commands {
     private static readonly handleRunCommand = async() => {
         const cellName = await vscode.window.showInputBox({
             placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
-            prompt: `Enter the cell name`,
+            prompt: `Enter the image name`,
         });
         const instanceName = await vscode.window.showInputBox({
-            value: `${vscode.window.activeTextEditor ? path.parse(vscode.window.activeTextEditor.document.fileName).name : "my-instance"}`,
-            prompt: `Enter the cell instance name`,
+            value: `${vscode.window.activeTextEditor ? path.parse(vscode.window.activeTextEditor.document.fileName).
+                name : "my-instance"}`,
+            prompt: `Enter the instance name`,
         });
         const file = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
         if (cellName && instanceName && file) {
@@ -76,14 +84,23 @@ class Commands {
             const runCommand = `${Constants.CELLERY_RUN_COMMAND} ${cellName} -n ${instanceName} -d`;
             const logCommand = `${Constants.CELLERY_LOGS_COMMAND} ${instanceName}`;
             if (!(Commands.terminals.run)) {
-                const terminal = vscode.window.createTerminal({ name: "Cellery Run", cwd: path.dirname(file)});
-                Commands.terminals.run = terminal;
+                Commands.terminals.run = vscode.window.createTerminal({
+                    name: "Cellery Run",
+                    cwd: path.dirname(file),
+                });
             }
             Commands.terminals.run.show(true);
             Commands.terminals.run.sendText(`${buildCommand} && ${runCommand} && ${logCommand}`);
-            return;
+        } else {
+            const errorMessage: string = "Unable to run cellery run";
+            if (!file) {
+                vscode.window.showErrorMessage(`${errorMessage}, source file not found`);
+            } else if (!cellName) {
+                vscode.window.showErrorMessage(`${errorMessage}, cell name not found`);
+            } else if (!instanceName) {
+                vscode.window.showErrorMessage(`${errorMessage}, instance name not found`);
+            }
         }
-        vscode.window.showErrorMessage("Something went wrong while running cellery run");
     }
 }
 

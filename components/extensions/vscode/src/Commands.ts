@@ -31,15 +31,15 @@ class Commands {
      */
     public static registerCelleryCommands = (context: vscode.ExtensionContext) => {
         context.subscriptions.push(vscode.commands.registerCommand(Constants.commands.CELLERY_BUILD,
-                                                                   Commands.buildCommandHandler));
+                                                                   Commands.handleBuildCommand));
         context.subscriptions.push(vscode.commands.registerCommand(Constants.commands.CELLERY_RUN,
-                                                                   Commands.runCommandHandler));
+                                                                   Commands.handleRunCommand));
     }
 
     /**
      * cellery build command handler used by the function 'registerCommand'
      */
-    private static readonly buildCommandHandler = async() => {
+    private static readonly handleBuildCommand = async() => {
         const cellName = await vscode.window.showInputBox({
             placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
             prompt: `Enter the cell name`,
@@ -53,17 +53,19 @@ class Commands {
                 delete Commands.terminals.build;
                 assocTerminal.dispose();
             }
-            const terminal = vscode.window.createTerminal({ name: "build", cwd: cwd});
+            const terminal = vscode.window.createTerminal({ name: "Cellery Build", cwd: cwd});
             Commands.terminals.build = terminal;
             terminal.show(true);
             terminal.sendText(buildCommand);
+            return;
         }
+        vscode.window.showErrorMessage("Something went wrong while running cellery build");
     }
 
     /**
      * cellery run command handler used by the function 'registerCommand'
      */
-    private static readonly runCommandHandler = async() => {
+    private static readonly handleRunCommand = async() => {
         const cellName = await vscode.window.showInputBox({
             placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
             prompt: `Enter the cell name`,
@@ -83,11 +85,13 @@ class Commands {
                 delete Commands.terminals.run;
                 assocTerminal.dispose();
             }
-            const terminal = vscode.window.createTerminal({ name: "run", cwd: cwd});
+            const terminal = vscode.window.createTerminal({ name: "Cellery Ruild", cwd: cwd});
             Commands.terminals.run = terminal;
             terminal.show(true);
             terminal.sendText(`${buildCommand} && ${runCommand} && ${logCommand}`);
+            return;
         }
+        vscode.window.showErrorMessage("Something went wrong while running cellery run");
     }
 }
 

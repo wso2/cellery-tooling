@@ -25,11 +25,11 @@
 	"contributes": {
 		"commands": [
 			{
-				"command": "celleryExtension.build",
+				"command": "cellery.build",
 				"title": "Cellery: Build"
 			},
 			{
-				"command": "celleryExtension.run",
+				"command": "cellery.run",
 				"title": "Cellery: Run"
 			}
 		]

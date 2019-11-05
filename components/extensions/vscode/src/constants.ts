@@ -37,11 +37,13 @@ class Constants {
         public static readonly WORKBENCH_RELOAD = "workbench.action.reloadWindow";
         public static readonly CELLERY_BUILD = "cellery.build";
         public static readonly CELLERY_RUN = "cellery.run";
+        public static readonly CELLERY_TEST = "cellery.test";
     };
 
     public static readonly CELLERY_BUILD_COMMAND = "cellery build";
     public static readonly CELLERY_RUN_COMMAND = "cellery run";
     public static readonly CELLERY_LOGS_COMMAND = "cellery logs";
+    public static readonly CELLERY_TEST_COMMAND = "cellery test";
     public static readonly ORG_NAME = "org-name";
     public static readonly IMAGE_NAME = "image-name";
     public static readonly VERSION = "version";

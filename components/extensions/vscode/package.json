@@ -31,6 +31,10 @@
 			{
 				"command": "cellery.run",
 				"title": "Cellery: Run"
+			},
+			{
+				"command": "cellery.test",
+				"title": "Cellery: Test"
 			}
 		]
 	},

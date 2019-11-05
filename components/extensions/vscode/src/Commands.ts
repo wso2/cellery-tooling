@@ -34,6 +34,8 @@ class Commands {
                                                                    Commands.handleBuildCommand));
         context.subscriptions.push(vscode.commands.registerCommand(Constants.commands.CELLERY_RUN,
                                                                    Commands.handleRunCommand));
+        context.subscriptions.push(vscode.commands.registerCommand(Constants.commands.CELLERY_TEST,
+                                                                   Commands.handleTestCommand));
     }
 
     /**
@@ -60,7 +62,7 @@ class Commands {
             if (!file) {
                 vscode.window.showErrorMessage(`${errorMessage}, source file not found`);
             } else if (!cellName) {
-                vscode.window.showErrorMessage(`${errorMessage}, cell name not found`);
+                vscode.window.showErrorMessage(`${errorMessage}, image name not found`);
             }
         }
     }
@@ -74,8 +76,9 @@ class Commands {
             prompt: `Enter the image name`,
         });
         const instanceName = await vscode.window.showInputBox({
-            value: `${vscode.window.activeTextEditor ? path.parse(vscode.window.activeTextEditor.document.fileName).
-                name : "my-instance"}`,
+            value: `${vscode.window.activeTextEditor
+                ? path.parse(vscode.window.activeTextEditor.document.fileName).name
+                : "my-instance"}`,
             prompt: `Enter the instance name`,
         });
         const file = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
@@ -96,7 +99,45 @@ class Commands {
             if (!file) {
                 vscode.window.showErrorMessage(`${errorMessage}, source file not found`);
             } else if (!cellName) {
-                vscode.window.showErrorMessage(`${errorMessage}, cell name not found`);
+                vscode.window.showErrorMessage(`${errorMessage}, image name not found`);
+            } else if (!instanceName) {
+                vscode.window.showErrorMessage(`${errorMessage}, instance name not found`);
+            }
+        }
+    }
+
+    /**
+     * cellery test command handler used by the function 'registerCommand'
+     */
+    private static readonly handleTestCommand = async() => {
+        const cellName = await vscode.window.showInputBox({
+            placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
+            prompt: `Enter the image name`,
+        });
+        const instanceName = await vscode.window.showInputBox({
+            value: `${vscode.window.activeTextEditor
+                ? path.parse(vscode.window.activeTextEditor.document.fileName).name
+                : "my-instance"}`,
+            prompt: `Enter the instance name`,
+        });
+        const file = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
+        if (cellName && instanceName && file) {
+            const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;
+            const testCommand = `${Constants.CELLERY_TEST_COMMAND} ${cellName} -n ${instanceName} -d`;
+            if (!(Commands.terminals.run)) {
+                Commands.terminals.run = vscode.window.createTerminal({
+                    name: "Cellery Test",
+                    cwd: path.dirname(file),
+                });
+            }
+            Commands.terminals.run.show(true);
+            Commands.terminals.run.sendText(`${buildCommand} && ${testCommand}`);
+        } else {
+            const errorMessage: string = "Unable to run cellery test";
+            if (!file) {
+                vscode.window.showErrorMessage(`${errorMessage}, source file not found`);
+            } else if (!cellName) {
+                vscode.window.showErrorMessage(`${errorMessage}, image name not found`);
             } else if (!instanceName) {
                 vscode.window.showErrorMessage(`${errorMessage}, instance name not found`);
             }

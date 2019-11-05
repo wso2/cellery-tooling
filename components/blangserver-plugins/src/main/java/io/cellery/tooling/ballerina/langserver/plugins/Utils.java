@@ -21,7 +21,9 @@ package io.cellery.tooling.ballerina.langserver.plugins;
 import org.ballerinalang.langserver.common.utils.CommonUtil;
 import org.ballerinalang.langserver.compiler.LSContext;
 import org.wso2.ballerinalang.compiler.semantics.model.symbols.BTypeSymbol;
+import org.wso2.ballerinalang.compiler.semantics.model.types.BMapType;
 import org.wso2.ballerinalang.compiler.semantics.model.types.BType;
+import org.wso2.ballerinalang.compiler.semantics.model.types.BUnionType;
 import org.wso2.ballerinalang.compiler.tree.BLangImportPackage;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangExpression;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangInvocation;
@@ -81,6 +83,32 @@ public class Utils {
         boolean isCorrectType = false;
         if (bLangExpression instanceof BLangInvocation) {
             isCorrectType = checkType(((BLangInvocation) bLangExpression).type, typeName);
+        }
+        return isCorrectType;
+    }
+
+    /**
+     * Check if the ballerina type is equal to the Cellery Map type.
+     *
+     * @param bType The ballerina type of which the type should be checked
+     * @param constraintTypeName The name of the Cellery type of the map constraint
+     * @return True if the type if equal
+     */
+    public static boolean checkMapType(BType bType, String constraintTypeName) {
+        boolean isCorrectType = false;
+        if (bType instanceof BMapType) {
+            BMapType bMapType = (BMapType) bType;
+            if (bMapType.constraint instanceof BUnionType) {
+                BUnionType bUnionType = (BUnionType) bMapType.constraint;
+                for (BType memberType : bUnionType.getMemberTypes()) {
+                    if (checkType(memberType, constraintTypeName)) {
+                        isCorrectType = true;
+                        break;
+                    }
+                }
+            } else {
+                isCorrectType = checkType(bMapType.constraint, constraintTypeName);
+            }
         }
         return isCorrectType;
     }

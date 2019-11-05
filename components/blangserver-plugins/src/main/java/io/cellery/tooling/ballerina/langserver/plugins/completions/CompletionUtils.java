@@ -18,20 +18,24 @@
 
 package io.cellery.tooling.ballerina.langserver.plugins.completions;
 
-import io.cellery.tooling.ballerina.langserver.plugins.ImageManager.Image;
+import io.cellery.tooling.ballerina.langserver.plugins.Constants;
+import io.cellery.tooling.ballerina.langserver.plugins.images.ComponentMetadata;
+import io.cellery.tooling.ballerina.langserver.plugins.images.ImageManager.Image;
 import io.cellery.tooling.ballerina.langserver.plugins.visitor.CelleryKeys;
 import io.cellery.tooling.ballerina.langserver.plugins.visitor.CelleryTreeVisitor;
 import org.ballerinalang.langserver.compiler.DocumentServiceKeys;
 import org.ballerinalang.langserver.compiler.LSContext;
-import org.ballerinalang.langserver.completions.util.ItemResolverConstants;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.MarkupContent;
 import org.wso2.ballerinalang.compiler.tree.BLangNode;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Cellery Lang Server plugin Completions related utilities.
@@ -56,7 +60,7 @@ public class CompletionUtils {
      * @return {@link List<CompletionItem>} List of calculated Completion Items
      */
     public static List<CompletionItem> generateReferenceKeysCompletions(Image image) {
-        List<CompletionItem> completions = new ArrayList<>();
+        List<CompletionItem> completions = new ArrayList<>(image.getReferenceKeys().size());
         String imageFQN = image.getFQN();
         for (Map.Entry<String, String> reference : image.getReferenceKeys().entrySet()) {
             CompletionItem completionItem = new CompletionItem();
@@ -68,9 +72,52 @@ public class CompletionUtils {
                     + "\n\n**Image:** " + imageFQN
                     + "\n\n**Key:** " + reference.getKey()
                     + "\n\n**Value:** " + reference.getValue());
-            completionItem.setDetail(ItemResolverConstants.FIELD_TYPE);
             completionItem.setDocumentation(documentation);
-            completionItem.setKind(CompletionItemKind.Field);
+            completionItem.setDetail(Constants.CompletionType.CELLERY_REFERENCE_KEY);
+            completionItem.setKind(CompletionItemKind.Function);
+            completions.add(completionItem);
+        }
+        return completions;
+    }
+
+    /**
+     * Generate image completions.
+     *
+     * @param images The images list for which the ingress key completions should be generated
+     * @return {@link List<CompletionItem>} List of calculated Completion Items
+     */
+    public static List<CompletionItem> generateImageStringCompletions(Collection<Image> images) {
+        List<CompletionItem> completions = new ArrayList<>(images.size());
+        for (Image image : images) {
+            String autoScalingStatus = null;
+            if (image.getMetadata().isZeroScalingRequired()) {
+                autoScalingStatus = "Zero Scaling";
+            }
+            if (image.getMetadata().isAutoScalingRequired()) {
+                autoScalingStatus = (autoScalingStatus == null ? "HPA" : autoScalingStatus + " & HPA");
+            }
+            if (autoScalingStatus == null) {
+                autoScalingStatus = "Disabled";
+            }
+
+            Set<String> ingressTypes = new HashSet<>();
+            for (ComponentMetadata componentMetadata : image.getMetadata().getComponents().values()) {
+                ingressTypes.addAll(componentMetadata.getIngressTypes());
+            }
+
+            CompletionItem completionItem = new CompletionItem();
+            completionItem.setInsertText("\"" + image.getFQN() + "\"");
+            completionItem.setLabel(image.getFQN());
+            MarkupContent documentation = new MarkupContent();
+            documentation.setKind("markdown");
+            documentation.setValue("**Cellery Image**"
+                    + "\n\n**Image:** " + image.getFQN()
+                    + "\n\n**Ingress Types:** " + String.join(", ", ingressTypes)
+                    + "\n\n**Kind:** " + image.getMetadata().getKind()
+                    + "\n\n**Auto-Scaling:** " + autoScalingStatus);
+            completionItem.setDocumentation(documentation);
+            completionItem.setDetail(Constants.CompletionType.CELLERY_IMAGE);
+            completionItem.setKind(CompletionItemKind.Text);
             completions.add(completionItem);
         }
         return completions;

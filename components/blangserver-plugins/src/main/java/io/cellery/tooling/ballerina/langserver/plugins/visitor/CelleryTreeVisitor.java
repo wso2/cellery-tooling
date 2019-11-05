@@ -19,9 +19,9 @@
 package io.cellery.tooling.ballerina.langserver.plugins.visitor;
 
 import io.cellery.tooling.ballerina.langserver.plugins.Constants;
-import io.cellery.tooling.ballerina.langserver.plugins.ImageManager;
-import io.cellery.tooling.ballerina.langserver.plugins.ImageManager.Image;
 import io.cellery.tooling.ballerina.langserver.plugins.Utils;
+import io.cellery.tooling.ballerina.langserver.plugins.images.ImageManager;
+import io.cellery.tooling.ballerina.langserver.plugins.images.ImageManager.Image;
 import org.ballerinalang.langserver.common.CommonKeys;
 import org.ballerinalang.langserver.common.utils.CommonUtil;
 import org.ballerinalang.langserver.compiler.LSContext;
@@ -66,7 +66,7 @@ public class CelleryTreeVisitor extends TreeVisitor {
         BLangExpression assignedExpression = simpleVariableDef.getVariable().getInitialExpression();
         String variableName = simpleVariableDef.getVariable().getName().getValue();
         if (visibleVariables.contains(variableName)) {
-            if (Utils.checkRecordType(assignedExpression, Constants.CELLERY_COMPONENT_TYPE)) {
+            if (Utils.checkRecordType(assignedExpression, Constants.CelleryTypes.COMPONENT)) {
                 BLangRecordLiteral recordLiteral = (BLangRecordLiteral) assignedExpression;
                 Component component = this.lsContext.get(CelleryKeys.COMPONENTS)
                         .computeIfAbsent(variableName, k -> new Component());
@@ -79,7 +79,7 @@ public class CelleryTreeVisitor extends TreeVisitor {
 
                 // Extracting dependencies information
                 BLangExpression dependencies = Utils.getFieldValue(recordLiteral, Component.DEPENDENCIES_FIELD_NAME);
-                if (Utils.checkRecordType(dependencies, Constants.CELLERY_DEPENDENCIES_TYPE)) {
+                if (Utils.checkRecordType(dependencies, Constants.CelleryTypes.DEPENDENCIES)) {
                     Map<String, Image> componentDependencies = new HashMap<>();
                     // Extracting cell dependencies from Component.dependencies.cells
                     BLangExpression cellDependencies = Utils.getFieldValue((BLangRecordLiteral) dependencies,
@@ -97,7 +97,7 @@ public class CelleryTreeVisitor extends TreeVisitor {
                     }
                     component.setDependencies(componentDependencies);
                 }
-            } else if (Utils.checkInvocationReturnType(assignedExpression, Constants.CELLERY_REFERENCE_TYPE)) {
+            } else if (Utils.checkInvocationReturnType(assignedExpression, Constants.CelleryTypes.REFERENCE)) {
                 // Resolving references at definition
                 BLangInvocation invocation = (BLangInvocation) assignedExpression;
                 List<? extends ExpressionNode> argumentExpressions = invocation.getArgumentExpressions();

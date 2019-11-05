@@ -18,7 +18,7 @@
 
 package io.cellery.tooling.ballerina.langserver.plugins.visitor;
 
-import io.cellery.tooling.ballerina.langserver.plugins.ImageManager.Image;
+import io.cellery.tooling.ballerina.langserver.plugins.images.ImageManager.Image;
 import org.ballerinalang.langserver.compiler.LSContext;
 
 import java.util.Map;

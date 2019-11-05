@@ -16,10 +16,11 @@
  * under the License.
  */
 
-package io.cellery.tooling.ballerina.langserver.plugins;
+package io.cellery.tooling.ballerina.langserver.plugins.images;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.cellery.tooling.ballerina.langserver.plugins.Constants;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -212,6 +213,7 @@ public class ImageManager {
         private File imageFile;
         private byte[] lastKnownDigest;
         private Map<String, String> referenceKeys;
+        private Metadata metadata;
 
         private Image(String orgName, String imageName, String version) {
             this.org = orgName;
@@ -225,6 +227,10 @@ public class ImageManager {
 
         public synchronized Map<String, String> getReferenceKeys() {
             return referenceKeys;
+        }
+
+        public synchronized Metadata getMetadata() {
+            return metadata;
         }
 
         public String getFQN() {
@@ -258,10 +264,18 @@ public class ImageManager {
          */
         private synchronized void extractInformation() {
             try (ZipFile celleryImageZip = new ZipFile(imageFile)) {
-                ZipEntry zipEntry = celleryImageZip.getEntry(Constants.CELLERY_IMAGE_REFERENCE_FILE);
-                String referenceJsonString = IOUtils.toString(celleryImageZip.getInputStream(zipEntry),
+                // Reading reference data
+                ZipEntry referenceJsonZipEntry = celleryImageZip.getEntry(Constants.CELLERY_IMAGE_REFERENCE_FILE);
+                String referenceJsonString = IOUtils.toString(celleryImageZip.getInputStream(referenceJsonZipEntry),
                         StandardCharsets.UTF_8);
                 referenceKeys = gson.fromJson(referenceJsonString, referenceTypeToken);
+
+                // Reading metadata
+                ZipEntry metadataJsonZipEntry = celleryImageZip.getEntry(Constants.CELLERY_IMAGE_METADATA_FILE);
+                String metadataJsonString = IOUtils.toString(celleryImageZip.getInputStream(metadataJsonZipEntry),
+                        StandardCharsets.UTF_8);
+                metadata = gson.fromJson(metadataJsonString, Metadata.class);
+
                 lastKnownDigest = getCurrentDigest();
             } catch (IOException e) {
                 logger.error("Failed to read Cell Image zip " + imageFile.getAbsolutePath(), e);

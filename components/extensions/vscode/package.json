@@ -22,6 +22,18 @@
 	"extensionDependencies": [
 		"ballerina.ballerina"
 	],
+	"contributes": {
+		"commands": [
+			{
+				"command": "cellery.build",
+				"title": "Cellery: Build"
+			},
+			{
+				"command": "cellery.run",
+				"title": "Cellery: Run"
+			}
+		]
+	},
 	"scripts": {
 		"clean": "rimraf ./dist/ && rimraf ./*.vsix && rimraf ./resources/io.cellery.tooling.ballerina.langserver.plugins.jar",
 		"format:check": "tslint -p ./ './src/**/*.ts' './test/**/*.ts' './scripts/**/*.ts'",

@@ -27,7 +27,10 @@
 		"no-var-requires": true,
 		"only-arrow-functions": true,
 		"unified-signatures": true,
-		"await-promise": true,
+		"await-promise": [
+			true,
+			"Thenable"
+		],
 		"ban-comma-operator": true,
 		"function-constructor": true,
 		"label-position": true,

@@ -17,11 +17,13 @@
  */
 
 import * as vscode from "vscode";
+import Commands from "./Commands";
 import ExtensionUtils from "./utils/ExtensionUtils";
 
 export const activate = (context: vscode.ExtensionContext) => {
     try {
         ExtensionUtils.setupBalLangServerPlugins(context.extensionPath);
+        Commands.registerCelleryCommands(context);
     } catch (error) {
         vscode.window.showErrorMessage("Failed to install Cellery code completion plugins");
         throw error;

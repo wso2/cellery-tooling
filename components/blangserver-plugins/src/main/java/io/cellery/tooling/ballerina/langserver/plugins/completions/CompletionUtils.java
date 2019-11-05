@@ -64,8 +64,8 @@ public class CompletionUtils {
         String imageFQN = image.getFQN();
         for (Map.Entry<String, String> reference : image.getReferenceKeys().entrySet()) {
             CompletionItem completionItem = new CompletionItem();
-            completionItem.setInsertText(reference.getKey());
-            completionItem.setLabel(reference.getKey());
+            completionItem.setInsertText("get(\"" + reference.getKey() + "\")");
+            completionItem.setLabel("get(\"" + reference.getKey() + "\")");
             MarkupContent documentation = new MarkupContent();
             documentation.setKind("markdown");
             documentation.setValue("**Cellery Image Reference Key**"

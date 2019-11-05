@@ -57,7 +57,7 @@ public class SnippetGenerator {
         String componentsString = generateComponentsMapEntries(components, "\t");
         return new SnippetBlock(Constants.CompletionProvider.CELL_SNIPPET_LABEL,
                 "cellery:CellImage ${1:cell} = {\n" +
-                        "\tcomponents: " + componentsString + "\n" +
+                            "\tcomponents: " + componentsString + "\n" +
                         "};",
                 ItemResolverConstants.SNIPPET_TYPE,
                 SnippetBlock.SnippetType.SNIPPET);
@@ -73,7 +73,7 @@ public class SnippetGenerator {
         String componentsString = generateComponentsMapEntries(components, "\t");
         return new SnippetBlock(Constants.CompletionProvider.COMPOSITE_SNIPPET_LABEL,
                 "cellery:Composite ${1:composite} = {\n" +
-                        "\tcomponents: " + componentsString + "\n" +
+                            "\tcomponents: " + componentsString + "\n" +
                         "};",
                 ItemResolverConstants.SNIPPET_TYPE,
                 SnippetBlock.SnippetType.SNIPPET);

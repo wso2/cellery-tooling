@@ -233,6 +233,18 @@ public class ImageManager {
             return metadata;
         }
 
+        public String getOrg() {
+            return org;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
         public String getFQN() {
             return ImageManager.getImageFQN(org, name, version);
         }

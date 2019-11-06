@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * Cellery Lang Server plugin Completions related utilities.
@@ -84,9 +85,11 @@ public class CompletionUtils {
      * Generate image completions.
      *
      * @param images The images list for which the ingress key completions should be generated
+     * @param insertTextMapFunction Function to map insert text from image
      * @return {@link List<CompletionItem>} List of calculated Completion Items
      */
-    public static List<CompletionItem> generateImageStringCompletions(Collection<Image> images) {
+    public static List<CompletionItem> generateImageStringCompletions(Collection<Image> images,
+                                                                      Function<Image, String> insertTextMapFunction) {
         List<CompletionItem> completions = new ArrayList<>(images.size());
         for (Image image : images) {
             String autoScalingStatus = null;
@@ -106,7 +109,7 @@ public class CompletionUtils {
             }
 
             CompletionItem completionItem = new CompletionItem();
-            completionItem.setInsertText("\"" + image.getFQN() + "\"");
+            completionItem.setInsertText(insertTextMapFunction.apply(image));
             completionItem.setLabel(image.getFQN());
             MarkupContent documentation = new MarkupContent();
             documentation.setKind("markdown");

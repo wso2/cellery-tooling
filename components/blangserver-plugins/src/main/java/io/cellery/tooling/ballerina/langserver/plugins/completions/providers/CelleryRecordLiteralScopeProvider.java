@@ -33,8 +33,11 @@ import org.wso2.ballerinalang.compiler.parser.antlr4.BallerinaParser;
 import org.wso2.ballerinalang.compiler.tree.BLangNode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * Record Literal Scope Cellery Completions Provider.
@@ -62,9 +65,12 @@ public class CelleryRecordLiteralScopeProvider extends RecordLiteralScopeProvide
 
                 int invocationTokenTypeIndex = defaultTokenTypes.lastIndexOf(invocationToken);
                 int firstColonIndex = defaultTokenTypes.indexOf(BallerinaParser.COLON);
-                if (Utils.checkMapType(scopeNode.type, Constants.CelleryTypes.IMAGE_NAME)
-                        && firstColonIndex >= 0 && firstColonIndex == invocationTokenTypeIndex) {
-                    completions.addAll(getCelleryImageCompletions());
+                if (Utils.checkMapType(scopeNode.type, Constants.CelleryTypes.IMAGE_NAME)) {
+                    if (firstColonIndex == -1) {
+                        completions.addAll(getCelleryImageCompletions(true));
+                    } else if (firstColonIndex == invocationTokenTypeIndex) {
+                        completions.addAll(getCelleryImageCompletions(false));
+                    }
                 }
             }
         } catch (Exception e) {
@@ -85,8 +91,23 @@ public class CelleryRecordLiteralScopeProvider extends RecordLiteralScopeProvide
      *
      * @return {@link List<CompletionItem>} List of calculated Completion Items
      */
-    private List<CompletionItem> getCelleryImageCompletions() {
+    private List<CompletionItem> getCelleryImageCompletions(boolean includeAlias) {
         Collection<ImageManager.Image> images = ImageManager.getInstance().getImages();
-        return CompletionUtils.generateImageStringCompletions(images);
+        List<CompletionItem> completions;
+        if (includeAlias) {
+            completions = CompletionUtils.generateImageStringCompletions(images, (image) -> {
+                String[] imageNameSplit = image.getName().split("-");
+                String alias = imageNameSplit[0]
+                        + Arrays.stream(Arrays.copyOfRange(imageNameSplit, 1, imageNameSplit.length))
+                        .map((imageNameSplitItem) -> imageNameSplitItem.substring(0, 1).toUpperCase(Locale.ENGLISH)
+                                + imageNameSplitItem.substring(1))
+                        .collect(Collectors.joining(""));
+                return alias + ": \"" + image.getFQN() + "\"";
+            });
+        } else {
+            completions = CompletionUtils.generateImageStringCompletions(images,
+                    (image) -> "\"" + image.getFQN() + "\"");
+        }
+        return completions;
     }
 }

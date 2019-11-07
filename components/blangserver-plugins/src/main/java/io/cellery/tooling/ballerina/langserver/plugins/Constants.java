@@ -18,18 +18,55 @@
 
 package io.cellery.tooling.ballerina.langserver.plugins;
 
+import java.io.File;
+
 /**
  * Cellery Ballerina Language Server related constants.
  */
 public class Constants {
-
     public static final String CELLERY_PACKAGE_ORG_NAME = "celleryio";
     public static final String CELLERY_PACKAGE_NAME = "cellery";
+    public static final String CELLERY_GET_REFERENCE_METHOD = "getReference";
+
+    public static final String CELLERY_IMAGE_EXTENSION = ".zip";
+    public static final String LOCAL_REPO_DIRECTORY = System.getProperty("user.home") + File.separator + ".cellery"
+            + File.separator + "repo";
+    public static final String CELLERY_IMAGE_REFERENCE_ZIP_ENTRY = "artifacts/ref/reference.json";
+    public static final String CELLERY_IMAGE_METADATA_ZIP_ENTRY = "artifacts/cellery/metadata.json";
+    public static final String CELLERY_PULL_COMMAND = "cellery pull %s/%s:%s";
+
+    /**
+     * Ballerina types defined by Cellery.
+     */
+    public static class CelleryTypes {
+        public static final String COMPONENT = "Component";
+        public static final String DEPENDENCIES = "Dependencies";
+        public static final String REFERENCE = "Reference";
+        public static final String IMAGE_NAME = "ImageName";
+    }
 
     /**
      * Completion Providers related constants.
      */
     public static class CompletionProvider {
-        public static final String COMPONENT_SNIPPET_LABEL = "cellery:component";
+        private static final String CELLERY_PREFIX = "cellery:";
+        public static final String COMPONENT_SNIPPET_LABEL = CELLERY_PREFIX + "component";
+        public static final String CELL_SNIPPET_LABEL = CELLERY_PREFIX + "cell";
+        public static final String COMPOSITE_SNIPPET_LABEL = CELLERY_PREFIX + "composite";
+    }
+
+    /**
+     * Completion Type constants.
+     */
+    public static class CompletionType {
+        public static final String CELLERY_REFERENCE_KEY = "Cellery Reference Key";
+        public static final String CELLERY_IMAGE = "Cellery Image";
+    }
+
+    /**
+     * Enum for Image kinds supported by Cellery.
+     */
+    public enum ImageKind {
+        Cell, Composite
     }
 }

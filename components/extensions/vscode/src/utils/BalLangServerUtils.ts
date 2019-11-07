@@ -87,7 +87,7 @@ class BalLangServerUtils {
                     === CommonUtils.getFileChecksum(targetLangPluginsJar);
             } else {
                 throw Error("Unable to validate the installed lang server plugins " +
-                    "as extension doesn't contain the plugins");
+                    `as extension doesn't contain the plugins at ${langPluginsJar}`);
             }
         } else {
             return false;

@@ -265,6 +265,7 @@ public class ImageManager {
                     MessageDigest md5 = MessageDigest.getInstance("MD5");
                     digest = md5.digest(IOUtils.toByteArray(new FileInputStream(imageFile)));
                 } catch (IOException | NoSuchAlgorithmException e) {
+                    logger.warn("Failed to get the digest of Cellery Image file " + imageFile, e);
                     digest = null;
                 }
             }
@@ -277,13 +278,13 @@ public class ImageManager {
         private synchronized void extractInformation() {
             try (ZipFile celleryImageZip = new ZipFile(imageFile)) {
                 // Reading reference data
-                ZipEntry referenceJsonZipEntry = celleryImageZip.getEntry(Constants.CELLERY_IMAGE_REFERENCE_FILE);
+                ZipEntry referenceJsonZipEntry = celleryImageZip.getEntry(Constants.CELLERY_IMAGE_REFERENCE_ZIP_ENTRY);
                 String referenceJsonString = IOUtils.toString(celleryImageZip.getInputStream(referenceJsonZipEntry),
                         StandardCharsets.UTF_8);
                 referenceKeys = gson.fromJson(referenceJsonString, referenceTypeToken);
 
                 // Reading metadata
-                ZipEntry metadataJsonZipEntry = celleryImageZip.getEntry(Constants.CELLERY_IMAGE_METADATA_FILE);
+                ZipEntry metadataJsonZipEntry = celleryImageZip.getEntry(Constants.CELLERY_IMAGE_METADATA_ZIP_ENTRY);
                 String metadataJsonString = IOUtils.toString(celleryImageZip.getInputStream(metadataJsonZipEntry),
                         StandardCharsets.UTF_8);
                 metadata = gson.fromJson(metadataJsonString, Metadata.class);

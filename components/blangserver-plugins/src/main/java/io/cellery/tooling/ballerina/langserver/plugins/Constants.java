@@ -31,8 +31,8 @@ public class Constants {
     public static final String CELLERY_IMAGE_EXTENSION = ".zip";
     public static final String LOCAL_REPO_DIRECTORY = System.getProperty("user.home") + File.separator + ".cellery"
             + File.separator + "repo";
-    public static final String CELLERY_IMAGE_REFERENCE_FILE = "artifacts/ref/reference.json";
-    public static final String CELLERY_IMAGE_METADATA_FILE = "artifacts/cellery/metadata.json";
+    public static final String CELLERY_IMAGE_REFERENCE_ZIP_ENTRY = "artifacts/ref/reference.json";
+    public static final String CELLERY_IMAGE_METADATA_ZIP_ENTRY = "artifacts/cellery/metadata.json";
     public static final String CELLERY_PULL_COMMAND = "cellery pull %s/%s:%s";
 
     /**

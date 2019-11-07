@@ -19,13 +19,15 @@
 import * as path from "path";
 import * as vscode from "vscode";
 import Constants from "./constants";
+import CommandsUtils from "./utils/CommandsUtils";
 
 /**
  * Cellery commands.
  */
 class Commands {
     private static readonly terminals: { [name: string]: vscode.Terminal } = { };
-    private static imageNames: string[] = ["add new"];
+    private static readonly imageNames: string[] = ["add image name"];
+    private static readonly instanceNames: string[] = ["add instance name"];
 
     /**
      * Register Cellery Commands
@@ -46,18 +48,15 @@ class Commands {
         let cellName = await vscode.window.showQuickPick(Commands.imageNames, {
             placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
         });
-        if (cellName === "add new") {
-            const addedCellName = await vscode.window.showInputBox({
-                placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
-                prompt: `Enter the image name`,
-            });
-            if (addedCellName) {
-                Commands.imageNames.push(addedCellName);
-                cellName = addedCellName;
+        if (cellName === Commands.imageNames[0]) {
+            const newCellName = await CommandsUtils.getNewImageName();
+            if (newCellName) {
+                Commands.imageNames.push(newCellName);
+                cellName = newCellName;
             }
         }
         const file = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-        if (cellName && file) {
+        if (cellName && cellName !== Commands.imageNames[0] && file) {
             const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;
             if (!(Commands.terminals.build)) {
                 Commands.terminals.build = vscode.window.createTerminal({
@@ -81,18 +80,34 @@ class Commands {
      * cellery run command handler used by the function 'registerCommand'
      */
     private static readonly handleRunCommand = async() => {
-        const cellName = await vscode.window.showInputBox({
+        let cellName = await vscode.window.showQuickPick(Commands.imageNames, {
             placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
-            prompt: `Enter the image name`,
         });
-        const instanceName = await vscode.window.showInputBox({
-            value: `${vscode.window.activeTextEditor
-                ? path.parse(vscode.window.activeTextEditor.document.fileName).name
-                : "my-instance"}`,
-            prompt: `Enter the instance name`,
-        });
+        let instanceName: string | undefined;
+        if (cellName === Commands.imageNames[0]) {
+            const newCellName = await CommandsUtils.getNewImageName();
+            const newInstanceName = await CommandsUtils.getNewInstanceName();
+            if (newCellName && newInstanceName) {
+                Commands.imageNames.push(newCellName);
+                Commands.instanceNames.push(newInstanceName);
+                cellName = newCellName;
+                instanceName = newInstanceName;
+            }
+        } else {
+            instanceName = await vscode.window.showQuickPick(Commands.instanceNames, {
+                placeHolder: `instance-name`,
+            });
+            if (instanceName === Commands.instanceNames[0]) {
+                const newInstanceName = await CommandsUtils.getNewInstanceName();
+                if (newInstanceName) {
+                    Commands.instanceNames.push(newInstanceName);
+                    instanceName = newInstanceName;
+                }
+            }
+        }
         const file = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-        if (cellName && instanceName && file) {
+        if (cellName && instanceName && cellName !== Commands.imageNames[0] &&
+            instanceName !== Commands.instanceNames[0] && file) {
             const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;
             const runCommand = `${Constants.CELLERY_RUN_COMMAND} ${cellName} -n ${instanceName} -d`;
             const logCommand = `${Constants.CELLERY_LOGS_COMMAND} ${instanceName}`;
@@ -120,20 +135,20 @@ class Commands {
      * cellery test command handler used by the function 'registerCommand'
      */
     private static readonly handleTestCommand = async() => {
-        const cellName = await vscode.window.showInputBox({
+        let cellName = await vscode.window.showQuickPick(Commands.imageNames, {
             placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
-            prompt: `Enter the image name`,
         });
-        const instanceName = await vscode.window.showInputBox({
-            value: `${vscode.window.activeTextEditor
-                ? path.parse(vscode.window.activeTextEditor.document.fileName).name
-                : "my-instance"}`,
-            prompt: `Enter the instance name`,
-        });
+        if (cellName === Commands.imageNames[0]) {
+            const newCellName = await CommandsUtils.getNewImageName();
+            if (newCellName) {
+                Commands.imageNames.push(newCellName);
+                cellName = newCellName;
+            }
+        }
         const file = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-        if (cellName && instanceName && file) {
+        if (cellName && cellName !== Commands.imageNames[0] && file) {
             const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;
-            const testCommand = `${Constants.CELLERY_TEST_COMMAND} ${cellName} -n ${instanceName} -d`;
+            const testCommand = `${Constants.CELLERY_TEST_COMMAND} ${cellName}`;
             if (!(Commands.terminals.run)) {
                 Commands.terminals.run = vscode.window.createTerminal({
                     name: "Cellery Test",
@@ -148,8 +163,6 @@ class Commands {
                 vscode.window.showErrorMessage(`${errorMessage}, source file not found`);
             } else if (!cellName) {
                 vscode.window.showErrorMessage(`${errorMessage}, image name not found`);
-            } else if (!instanceName) {
-                vscode.window.showErrorMessage(`${errorMessage}, instance name not found`);
             }
         }
     }

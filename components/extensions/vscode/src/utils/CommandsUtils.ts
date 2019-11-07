@@ -46,6 +46,49 @@ class CommandsUtils {
             prompt: `Enter the instance name`,
         });
     }
+
+    /**
+     * validates the image tag
+     */
+    public static validateImageTag(cellName: string): boolean {
+        const regexp = /^([^/:]*)\/([^/:]*):([^/:]*)$/;
+        const subMatch = regexp.exec(cellName);
+        if (subMatch === null) {
+            vscode.window.showErrorMessage(`expects <organization>/<cell-image>:<version> as the tag, received ${cellName}`);
+            return false;
+        }
+        const organization = subMatch[1];
+        if (!(Constants.CELLERY_ID_PATTERN.test(organization))) {
+            vscode.window.showErrorMessage(`"expects a valid organization name (lower case letters, numbers and dashes "+
+			"with only letters and numbers at the begining and end), received ${organization}`);
+            return false;
+        }
+        const imageName = subMatch[2];
+        if (!(Constants.CELLERY_ID_PATTERN.test(imageName))) {
+            vscode.window.showErrorMessage(`expects a valid image name (lower case letters, numbers and dashes "+
+			"with only letters and numbers at the begining and end), received ${imageName}`);
+            return false;
+        }
+        const imageVersion = subMatch[3];
+        if (!(Constants.IMAGE_VERSION_PATTERN.test(imageVersion))) {
+            vscode.window.showErrorMessage(`expects a valid image version (lower case letters, numbers, dashes and dots "+
+			"with only letters and numbers at the begining and end), received ${imageVersion}`);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * validates the instance name
+     */
+    public static validateInstanceName(instanceName: string): boolean {
+        if (!(Constants.CELLERY_ID_PATTERN.test(instanceName))) {
+            vscode.window.showErrorMessage(`expects a valid instance name (lower case letters, numbers, dashes and dots "+
+			"with only letters and numbers at the begining and end), received ${instanceName}`);
+            return false;
+        }
+        return true;
+    }
 }
 
 export default CommandsUtils;

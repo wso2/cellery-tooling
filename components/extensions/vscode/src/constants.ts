@@ -40,13 +40,18 @@ class Constants {
         public static readonly CELLERY_TEST = "cellery.test";
     };
 
+    // Cellery commands
     public static readonly CELLERY_BUILD_COMMAND = "cellery build";
     public static readonly CELLERY_RUN_COMMAND = "cellery run";
     public static readonly CELLERY_LOGS_COMMAND = "cellery logs";
     public static readonly CELLERY_TEST_COMMAND = "cellery test";
+
     public static readonly ORG_NAME = "org-name";
     public static readonly IMAGE_NAME = "image-name";
     public static readonly VERSION = "version";
+
+    public static readonly CELLERY_ID_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+    public static readonly IMAGE_VERSION_PATTERN = /^[a-z0-9]+((?:-|.)[a-z0-9]+)*$/;
 }
 
 export default Constants;

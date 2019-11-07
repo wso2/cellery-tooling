@@ -45,126 +45,133 @@ class Commands {
      * cellery build command handler used by the function 'registerCommand'
      */
     private static readonly handleBuildCommand = async() => {
+        const errorMessage: string = "Unable to run cellery build";
         let cellName = await vscode.window.showQuickPick(Commands.imageNames, {
             placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
         });
         if (cellName === Commands.imageNames[0]) {
             const newCellName = await CommandsUtils.getNewImageName();
-            if (newCellName) {
-                Commands.imageNames.push(newCellName);
-                cellName = newCellName;
+            if (newCellName === undefined || !CommandsUtils.validateImageTag(newCellName)) {
+                if (newCellName === undefined) {
+                    vscode.window.showErrorMessage(`${errorMessage}, image name not found`);
+                }
+                return;
             }
+            Commands.imageNames.push(newCellName);
+            cellName = newCellName;
         }
         const file = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-        if (cellName && cellName !== Commands.imageNames[0] && file) {
-            const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;
-            if (!(Commands.terminals.build)) {
-                Commands.terminals.build = vscode.window.createTerminal({
-                    name: "Cellery Build",
-                    cwd: path.dirname(file),
-                });
-            }
-            Commands.terminals.build.show(true);
-            Commands.terminals.build.sendText(buildCommand);
-        } else {
-            const errorMessage: string = "Unable to run cellery build";
-            if (!file) {
-                vscode.window.showErrorMessage(`${errorMessage}, source file not found`);
-            } else if (!cellName) {
-                vscode.window.showErrorMessage(`${errorMessage}, image name not found`);
-            }
+        if (file === null) {
+            vscode.window.showErrorMessage(`${errorMessage}, source file not found`);
+            return;
         }
+        const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;
+        if (!(Commands.terminals.build)) {
+            Commands.terminals.build = vscode.window.createTerminal({
+                name: "Cellery Build",
+                cwd: path.dirname(file),
+            });
+        }
+        Commands.terminals.build.show(true);
+        Commands.terminals.build.sendText(buildCommand);
     }
 
     /**
      * cellery run command handler used by the function 'registerCommand'
      */
     private static readonly handleRunCommand = async() => {
+        const errorMessage: string = "Unable to run cellery run";
         let cellName = await vscode.window.showQuickPick(Commands.imageNames, {
             placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
         });
         let instanceName: string | undefined;
         if (cellName === Commands.imageNames[0]) {
             const newCellName = await CommandsUtils.getNewImageName();
-            const newInstanceName = await CommandsUtils.getNewInstanceName();
-            if (newCellName && newInstanceName) {
-                Commands.imageNames.push(newCellName);
-                Commands.instanceNames.push(newInstanceName);
-                cellName = newCellName;
-                instanceName = newInstanceName;
+            if (newCellName === undefined || !CommandsUtils.validateImageTag(newCellName)) {
+                if (newCellName === undefined) {
+                    vscode.window.showErrorMessage(`${errorMessage}, image name not found`);
+                }
+                return;
             }
+            Commands.imageNames.push(newCellName);
+            cellName = newCellName;
+            const newInstanceName = await CommandsUtils.getNewInstanceName();
+            if (newInstanceName === undefined || !CommandsUtils.validateInstanceName(newInstanceName)) {
+                if (newInstanceName === undefined) {
+                    vscode.window.showErrorMessage(`${errorMessage}, instance name not found`);
+                }
+                return;
+            }
+            Commands.instanceNames.push(newInstanceName);
+            instanceName = newInstanceName;
         } else {
             instanceName = await vscode.window.showQuickPick(Commands.instanceNames, {
                 placeHolder: `instance-name`,
             });
             if (instanceName === Commands.instanceNames[0]) {
                 const newInstanceName = await CommandsUtils.getNewInstanceName();
-                if (newInstanceName) {
-                    Commands.instanceNames.push(newInstanceName);
-                    instanceName = newInstanceName;
+                if (newInstanceName === undefined || !CommandsUtils.validateInstanceName(newInstanceName)) {
+                    if (newInstanceName === undefined) {
+                        vscode.window.showErrorMessage(`${errorMessage}, instance name not found`);
+                    }
+                    return;
                 }
+                Commands.instanceNames.push(newInstanceName);
+                instanceName = newInstanceName;
             }
         }
         const file = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-        if (cellName && instanceName && cellName !== Commands.imageNames[0] &&
-            instanceName !== Commands.instanceNames[0] && file) {
-            const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;
-            const runCommand = `${Constants.CELLERY_RUN_COMMAND} ${cellName} -n ${instanceName} -d`;
-            const logCommand = `${Constants.CELLERY_LOGS_COMMAND} ${instanceName}`;
-            if (!(Commands.terminals.run)) {
-                Commands.terminals.run = vscode.window.createTerminal({
-                    name: "Cellery Run",
-                    cwd: path.dirname(file),
-                });
-            }
-            Commands.terminals.run.show(true);
-            Commands.terminals.run.sendText(`${buildCommand} && ${runCommand} && ${logCommand}`);
-        } else {
-            const errorMessage: string = "Unable to run cellery run";
-            if (!file) {
-                vscode.window.showErrorMessage(`${errorMessage}, source file not found`);
-            } else if (!cellName) {
-                vscode.window.showErrorMessage(`${errorMessage}, image name not found`);
-            } else if (!instanceName) {
-                vscode.window.showErrorMessage(`${errorMessage}, instance name not found`);
-            }
+        if (file === null) {
+            vscode.window.showErrorMessage(`${errorMessage}, source file not found`);
+            return;
         }
+        const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;
+        const runCommand = `${Constants.CELLERY_RUN_COMMAND} ${cellName} -n ${instanceName} -d`;
+        const logCommand = `${Constants.CELLERY_LOGS_COMMAND} ${instanceName}`;
+        if (!(Commands.terminals.run)) {
+            Commands.terminals.run = vscode.window.createTerminal({
+                name: "Cellery Run",
+                cwd: path.dirname(file),
+            });
+        }
+        Commands.terminals.run.show(true);
+        Commands.terminals.run.sendText(`${buildCommand} && ${runCommand} && ${logCommand}`);
     }
 
     /**
      * cellery test command handler used by the function 'registerCommand'
      */
     private static readonly handleTestCommand = async() => {
+        const errorMessage: string = "Unable to run cellery test";
         let cellName = await vscode.window.showQuickPick(Commands.imageNames, {
             placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
         });
         if (cellName === Commands.imageNames[0]) {
             const newCellName = await CommandsUtils.getNewImageName();
-            if (newCellName) {
-                Commands.imageNames.push(newCellName);
-                cellName = newCellName;
+            if (newCellName === undefined || !CommandsUtils.validateImageTag(newCellName)) {
+                if (newCellName === undefined) {
+                    vscode.window.showErrorMessage(`${errorMessage}, image name not found`);
+                }
+                return;
             }
+            Commands.imageNames.push(newCellName);
+            cellName = newCellName;
         }
         const file = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-        if (cellName && cellName !== Commands.imageNames[0] && file) {
-            const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;
-            const testCommand = `${Constants.CELLERY_TEST_COMMAND} ${cellName}`;
-            if (!(Commands.terminals.run)) {
-                Commands.terminals.run = vscode.window.createTerminal({
-                    name: "Cellery Test",
-                    cwd: path.dirname(file),
-                });
-            }
-            Commands.terminals.run.show(true);
-            Commands.terminals.run.sendText(`${buildCommand} && ${testCommand}`);
-        } else {
-            const errorMessage: string = "Unable to run cellery test";
-            if (!file) {
-                vscode.window.showErrorMessage(`${errorMessage}, source file not found`);
-            } else if (!cellName) {
-                vscode.window.showErrorMessage(`${errorMessage}, image name not found`);
-            }
+        if (file === null) {
+            vscode.window.showErrorMessage(`${errorMessage}, source file not found`);
+            return;
         }
+        const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;
+        const testCommand = `${Constants.CELLERY_TEST_COMMAND} ${cellName}`;
+        if (!(Commands.terminals.run)) {
+            Commands.terminals.run = vscode.window.createTerminal({
+                name: "Cellery Test",
+                cwd: path.dirname(file),
+            });
+        }
+        Commands.terminals.run.show(true);
+        Commands.terminals.run.sendText(`${buildCommand} && ${testCommand}`);
     }
 }
 

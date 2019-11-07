@@ -25,6 +25,7 @@ import Constants from "./constants";
  */
 class Commands {
     private static readonly terminals: { [name: string]: vscode.Terminal } = { };
+    private static imageNames: string[] = ["add new"];
 
     /**
      * Register Cellery Commands
@@ -42,10 +43,19 @@ class Commands {
      * cellery build command handler used by the function 'registerCommand'
      */
     private static readonly handleBuildCommand = async() => {
-        const cellName = await vscode.window.showInputBox({
+        let cellName = await vscode.window.showQuickPick(Commands.imageNames, {
             placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
-            prompt: `Enter the image name`,
         });
+        if (cellName === "add new") {
+            const addedCellName = await vscode.window.showInputBox({
+                placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
+                prompt: `Enter the image name`,
+            });
+            if (addedCellName) {
+                Commands.imageNames.push(addedCellName);
+                cellName = addedCellName;
+            }
+        }
         const file = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
         if (cellName && file) {
             const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${cellName}`;

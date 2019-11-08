@@ -19,7 +19,7 @@
 import * as path from "path";
 import * as vscode from "vscode";
 import Constants from "./constants";
-import CommandsUtils from "./utils/CommandsUtils";
+import CommonUtils from "./utils/CommonUtils";
 
 /**
  * Cellery commands.
@@ -54,11 +54,9 @@ class Commands {
             return;
         }
         if (imageName === Commands.imageNames[0]) {
-            const newImageName = await CommandsUtils.getNewImageName();
-            if (newImageName === undefined || !CommandsUtils.validateImageTag(newImageName)) {
-                if (newImageName === undefined) {
-                    vscode.window.showErrorMessage(`${errorMessage}, image name not found`);
-                }
+            const newImageName = await Commands.getNewImageName();
+            if (newImageName === undefined) {
+                vscode.window.showErrorMessage(`${errorMessage}, image name not found`);
                 return;
             }
             Commands.imageNames.push(newImageName);
@@ -94,20 +92,16 @@ class Commands {
             return;
         }
         if (imageName === Commands.imageNames[0]) {
-            const newImageName = await CommandsUtils.getNewImageName();
-            if (newImageName === undefined || !CommandsUtils.validateImageTag(newImageName)) {
-                if (newImageName === undefined) {
-                    vscode.window.showErrorMessage(`${errorMessage}, image name not found`);
-                }
+            const newImageName = await Commands.getNewImageName();
+            if (newImageName === undefined) {
+                vscode.window.showErrorMessage(`${errorMessage}, image name not found`);
                 return;
             }
             Commands.imageNames.push(newImageName);
             imageName = newImageName;
-            const newInstanceName = await CommandsUtils.getNewInstanceName();
-            if (newInstanceName === undefined || !CommandsUtils.validateInstanceName(newInstanceName)) {
-                if (newInstanceName === undefined) {
-                    vscode.window.showErrorMessage(`${errorMessage}, instance name not found`);
-                }
+            const newInstanceName = await Commands.getNewInstanceName();
+            if (newInstanceName === undefined) {
+                vscode.window.showErrorMessage(`${errorMessage}, instance name not found`);
                 return;
             }
             Commands.instanceNames.push(newInstanceName);
@@ -121,11 +115,9 @@ class Commands {
                 return;
             }
             if (instanceName === Commands.instanceNames[0]) {
-                const newInstanceName = await CommandsUtils.getNewInstanceName();
-                if (newInstanceName === undefined || !CommandsUtils.validateInstanceName(newInstanceName)) {
-                    if (newInstanceName === undefined) {
-                        vscode.window.showErrorMessage(`${errorMessage}, instance name not found`);
-                    }
+                const newInstanceName = await Commands.getNewInstanceName();
+                if (newInstanceName === undefined) {
+                    vscode.window.showErrorMessage(`${errorMessage}, instance name not found`);
                     return;
                 }
                 Commands.instanceNames.push(newInstanceName);
@@ -163,11 +155,9 @@ class Commands {
             return;
         }
         if (imageName === Commands.imageNames[0]) {
-            const newImageName = await CommandsUtils.getNewImageName();
-            if (newImageName === undefined || !CommandsUtils.validateImageTag(newImageName)) {
-                if (newImageName === undefined) {
-                    vscode.window.showErrorMessage(`${errorMessage}, image name not found`);
-                }
+            const newImageName = await Commands.getNewImageName();
+            if (newImageName === undefined) {
+                vscode.window.showErrorMessage(`${errorMessage}, image name not found`);
                 return;
             }
             Commands.imageNames.push(newImageName);
@@ -188,6 +178,34 @@ class Commands {
         }
         Commands.terminals.run.show(true);
         Commands.terminals.run.sendText(`${buildCommand} && ${testCommand}`);
+    }
+
+    /**
+     * Get new image name from user
+     */
+    private static getNewImageName(): Thenable<string | undefined> {
+        return vscode.window.showInputBox({
+            placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
+            prompt: `Enter the image name`,
+            validateInput: (value) => {
+                return CommonUtils.isValidImage(value);
+            },
+        });
+    }
+
+    /**
+     * Get new instance name from user
+     */
+    private static getNewInstanceName(): Thenable<string | undefined> {
+        return vscode.window.showInputBox({
+            value: `${vscode.window.activeTextEditor
+                ? path.parse(vscode.window.activeTextEditor.document.fileName).name
+                : "my-instance"}`,
+            prompt: `Enter the instance name`,
+            validateInput: (value) => {
+                return CommonUtils.isValidInstanceName(value);
+            },
+        });
     }
 }
 

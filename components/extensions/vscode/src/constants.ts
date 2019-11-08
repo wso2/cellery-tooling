@@ -52,6 +52,15 @@ class Constants {
 
     public static readonly CELLERY_ID_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
     public static readonly IMAGE_VERSION_PATTERN = /^[a-z0-9]+((?:-|.)[a-z0-9]+)*$/;
+
+    /**
+     * Includes the names of terminals used for running CLI commands
+     */
+    public static readonly terminals = class Commands {
+        public static readonly CELLERY_BUILD = "Cellery Build";
+        public static readonly CELLERY_RUN = "Cellery Run";
+        public static readonly CELLERY_TEST = "Cellery Test";
+    };
 }
 
 export default Constants;

@@ -25,7 +25,6 @@ import CommonUtils from "./utils/CommonUtils";
  * Cellery commands.
  */
 class Commands {
-    private static readonly terminals: { [name: string]: vscode.Terminal } = { };
     private static readonly imageNames: string[] = ["add image name"];
     private static readonly instanceNames: string[] = ["add instance name"];
 
@@ -68,14 +67,7 @@ class Commands {
             return;
         }
         const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${imageName}`;
-        if (!(Commands.terminals.build)) {
-            Commands.terminals.build = vscode.window.createTerminal({
-                name: "Cellery Build",
-                cwd: path.dirname(file),
-            });
-        }
-        Commands.terminals.build.show(true);
-        Commands.terminals.build.sendText(buildCommand);
+        Commands.runCommandInTerminal(buildCommand, file, Constants.terminals.CELLERY_BUILD);
     }
 
     /**
@@ -132,14 +124,8 @@ class Commands {
         const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${imageName}`;
         const runCommand = `${Constants.CELLERY_RUN_COMMAND} ${imageName} -n ${instanceName} -d`;
         const logCommand = `${Constants.CELLERY_LOGS_COMMAND} ${instanceName}`;
-        if (!(Commands.terminals.run)) {
-            Commands.terminals.run = vscode.window.createTerminal({
-                name: "Cellery Run",
-                cwd: path.dirname(file),
-            });
-        }
-        Commands.terminals.run.show(true);
-        Commands.terminals.run.sendText(`${buildCommand} && ${runCommand} && ${logCommand}`);
+        Commands.runCommandInTerminal(`${buildCommand} && ${runCommand} && ${logCommand}`, file,
+                                      Constants.terminals.CELLERY_RUN);
     }
 
     /**
@@ -170,14 +156,8 @@ class Commands {
         }
         const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${imageName}`;
         const testCommand = `${Constants.CELLERY_TEST_COMMAND} ${imageName}`;
-        if (!(Commands.terminals.run)) {
-            Commands.terminals.run = vscode.window.createTerminal({
-                name: "Cellery Test",
-                cwd: path.dirname(file),
-            });
-        }
-        Commands.terminals.run.show(true);
-        Commands.terminals.run.sendText(`${buildCommand} && ${testCommand}`);
+        Commands.runCommandInTerminal(`${buildCommand} && ${testCommand}`, file,
+                                      Constants.terminals.CELLERY_TEST);
     }
 
     /**
@@ -206,6 +186,29 @@ class Commands {
                 return CommonUtils.isValidInstanceName(value);
             },
         });
+    }
+
+    /**
+     * Run CLI command in terminal
+     */
+    private static runCommandInTerminal(command: string, file: string, terminalName: string) {
+        let isTerminalAvailable = false;
+        vscode.window.terminals.forEach((terminal) => {
+            if (terminal.name === terminalName) {
+                terminal.show(true);
+                terminal.sendText(command);
+                isTerminalAvailable = true;
+            }
+        });
+        if (isTerminalAvailable) {
+            return;
+        }
+        const newTerminal = vscode.window.createTerminal({
+            name: terminalName,
+            cwd: path.dirname(file),
+        });
+        newTerminal.show(true);
+        newTerminal.sendText(command);
     }
 }
 

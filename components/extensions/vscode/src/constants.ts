@@ -61,6 +61,9 @@ class Constants {
         public static readonly CELLERY_RUN = "Cellery Run";
         public static readonly CELLERY_TEST = "Cellery Test";
     };
+
+    public static readonly ADD_IMAGE_NAME = "add image name";
+    public static readonly ADD_INSTANCE_NAME = "add instance name";
 }
 
 export default Constants;

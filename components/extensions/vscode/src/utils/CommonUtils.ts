@@ -68,12 +68,12 @@ class CommonUtils {
      * @param imageTag image tag entered by the user
      * @return an empty string if image tag is valid, a description for tag to be invalid for invalid tags
      */
-    public static isValidImage(imageTag: string): string {
+    public static validateImageName(imageTag: string): string {
         const regexp = /^([^/:]*)\/([^/:]*):([^/:]*)$/;
         const subMatch = regexp.exec(imageTag);
         if (subMatch === null) {
             return `expects <organization>/<cell-image>:<version> as the tag
-                    ${imageTag !== "" ? `, received ${imageTag}` : ""}`;
+            ${imageTag !== "" ? `, received ${imageTag}` : ""}`;
         }
         const organization = subMatch[1];
         if (!(Constants.CELLERY_ID_PATTERN.test(organization))) {
@@ -103,7 +103,7 @@ class CommonUtils {
      * @return an empty string if instance name is valid,
      * a description for instance name to be invalid for invalid instance names
      */
-    public static isValidInstanceName(instanceName: string): string {
+    public static validateInstanceName(instanceName: string): string {
         if (!(Constants.CELLERY_ID_PATTERN.test(instanceName))) {
             return `expects a valid instance name (lower case letters, numbers, dashes and dots "+
 			"with only letters and numbers at the begining and end)

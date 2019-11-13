@@ -27,6 +27,8 @@ import CommonUtils from "./utils/CommonUtils";
 class Commands {
     private static cachedImageNames: string[] = [];
     private static cahchedInstanceNames: string[] = [];
+    private static readonly ADD_IMAGE_NAME = "add image name";
+    private static readonly ADD_INSTANCE_NAME = "add instance name";
 
     /**
      * Register Cellery Commands
@@ -45,13 +47,13 @@ class Commands {
      */
     private static readonly handleBuildCommand = async() => {
         let imageName: string | undefined = "";
-        if (Commands.cachedImageNames.length) {
+        if (Commands.cachedImageNames.length > 0) {
             imageName = await Commands.getCachedImageName();
             if (imageName === undefined) {
                 return;
             }
         }
-        if (imageName === Constants.ADD_IMAGE_NAME || !Commands.cachedImageNames.length) {
+        if (imageName === Commands.ADD_IMAGE_NAME || Commands.cachedImageNames.length === 0) {
             const newImageName = await Commands.getNewImageName();
             if (newImageName === undefined) {
                 return;
@@ -66,7 +68,7 @@ class Commands {
                 "Please open a Cell file to perform this action.");
             return;
         }
-        const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${imageName}`;
+        const buildCommand = `${Constants.celleryCommands.CELLERY_BUILD} ${file} ${imageName}`;
         Commands.runCommandInTerminal(buildCommand, file, Constants.terminals.CELLERY_BUILD);
     }
 
@@ -75,14 +77,14 @@ class Commands {
      */
     private static readonly handleRunCommand = async() => {
         let imageName: string | undefined = "";
-        if (Commands.cachedImageNames.length) {
+        if (Commands.cachedImageNames.length > 0) {
             imageName = await Commands.getCachedImageName();
             if (imageName === undefined) {
                 return;
             }
         }
         let instanceName: string | undefined = "";
-        if (imageName === Constants.ADD_IMAGE_NAME || !Commands.cachedImageNames.length) {
+        if (imageName === Commands.ADD_IMAGE_NAME || Commands.cachedImageNames.length === 0) {
             const newImageName = await Commands.getNewImageName();
             if (newImageName === undefined) {
                 return;
@@ -94,13 +96,13 @@ class Commands {
             }
             instanceName = newInstanceName;
         } else {
-            if (Commands.cahchedInstanceNames.length) {
+            if (Commands.cahchedInstanceNames.length > 0) {
                 instanceName = await Commands.getCachedInstanceName();
                 if (instanceName === undefined) {
                     return;
                 }
             }
-            if (instanceName === Constants.ADD_INSTANCE_NAME || !Commands.cahchedInstanceNames.length) {
+            if (instanceName === Commands.ADD_INSTANCE_NAME || Commands.cahchedInstanceNames.length === 0) {
                 const newInstanceName = await Commands.getNewInstanceName();
                 if (newInstanceName === undefined) {
                     return;
@@ -118,9 +120,9 @@ class Commands {
                 "Please open a Cell file to perform this action.");
             return;
         }
-        const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${imageName}`;
-        const runCommand = `${Constants.CELLERY_RUN_COMMAND} ${imageName} -n ${instanceName} -d`;
-        const logCommand = `${Constants.CELLERY_LOGS_COMMAND} ${instanceName}`;
+        const buildCommand = `${Constants.celleryCommands.CELLERY_BUILD} ${file} ${imageName}`;
+        const runCommand = `${Constants.celleryCommands.CELLERY_RUN} ${imageName} -n ${instanceName} -d`;
+        const logCommand = `${Constants.celleryCommands.CELLERY_LOGS} ${instanceName}`;
         Commands.runCommandInTerminal(`${buildCommand} && ${runCommand} && ${logCommand}`, file,
                                       Constants.terminals.CELLERY_RUN);
     }
@@ -130,13 +132,13 @@ class Commands {
      */
     private static readonly handleTestCommand = async() => {
         let imageName: string | undefined = "";
-        if (Commands.cachedImageNames.length) {
+        if (Commands.cachedImageNames.length > 0) {
             imageName = await Commands.getCachedImageName();
             if (imageName === undefined) {
                 return;
             }
         }
-        if (imageName === Constants.ADD_IMAGE_NAME || !Commands.cachedImageNames.length) {
+        if (imageName === Commands.ADD_IMAGE_NAME || Commands.cachedImageNames.length === 0) {
             const newImageName = await Commands.getNewImageName();
             if (newImageName === undefined) {
                 return;
@@ -151,8 +153,8 @@ class Commands {
                 "Please open a Cell file to perform this action.");
             return;
         }
-        const buildCommand = `${Constants.CELLERY_BUILD_COMMAND} ${file} ${imageName}`;
-        const testCommand = `${Constants.CELLERY_TEST_COMMAND} ${imageName}`;
+        const buildCommand = `${Constants.celleryCommands.CELLERY_BUILD} ${file} ${imageName}`;
+        const testCommand = `${Constants.celleryCommands.CELLERY_TEST} ${imageName}`;
         Commands.runCommandInTerminal(`${buildCommand} && ${testCommand}`, file,
                                       Constants.terminals.CELLERY_TEST);
     }
@@ -162,7 +164,7 @@ class Commands {
      */
     private static getCachedImageName(): Thenable<string | undefined> {
         return vscode.window.showQuickPick(
-            [...Commands.cachedImageNames, Constants.ADD_IMAGE_NAME],
+            [...Commands.cachedImageNames, Commands.ADD_IMAGE_NAME],
             { placeHolder: "Pick an image name or add new image name",
         });
     }
@@ -172,7 +174,7 @@ class Commands {
      */
     private static getCachedInstanceName(): Thenable<string | undefined> {
         return vscode.window.showQuickPick(
-            [...Commands.cahchedInstanceNames, Constants.ADD_INSTANCE_NAME],
+            [...Commands.cahchedInstanceNames, Commands.ADD_INSTANCE_NAME],
             { placeHolder: `Pick an instance-name or add new instance-name`,
         });
     }
@@ -185,7 +187,7 @@ class Commands {
             placeHolder: `${Constants.ORG_NAME}/${Constants.IMAGE_NAME}:${Constants.VERSION}`,
             prompt: `Enter the image name`,
             validateInput: (value) => {
-                return CommonUtils.isValidImage(value);
+                return CommonUtils.validateImageName(value);
             },
         });
     }
@@ -200,7 +202,7 @@ class Commands {
                 : "my-instance"}`,
             prompt: `Enter the instance name`,
             validateInput: (value) => {
-                return CommonUtils.isValidInstanceName(value);
+                return CommonUtils.validateInstanceName(value);
             },
         });
     }

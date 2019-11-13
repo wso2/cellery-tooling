@@ -40,11 +40,15 @@ class Constants {
         public static readonly CELLERY_TEST = "cellery.test";
     };
 
-    // Cellery commands
-    public static readonly CELLERY_BUILD_COMMAND = "cellery build";
-    public static readonly CELLERY_RUN_COMMAND = "cellery run";
-    public static readonly CELLERY_LOGS_COMMAND = "cellery logs";
-    public static readonly CELLERY_TEST_COMMAND = "cellery test";
+    /**
+     * Cellery commands.
+     */
+    public static readonly celleryCommands = class CelleryCommands {
+        public static readonly CELLERY_BUILD = "cellery build";
+        public static readonly CELLERY_RUN = "cellery run";
+        public static readonly CELLERY_LOGS = "cellery logs";
+        public static readonly CELLERY_TEST = "cellery test";
+    };
 
     public static readonly ORG_NAME = "org-name";
     public static readonly IMAGE_NAME = "image-name";
@@ -56,14 +60,11 @@ class Constants {
     /**
      * Includes the names of terminals used for running CLI commands
      */
-    public static readonly terminals = class Commands {
+    public static readonly terminals = class Terminals {
         public static readonly CELLERY_BUILD = "Cellery Build";
         public static readonly CELLERY_RUN = "Cellery Run";
         public static readonly CELLERY_TEST = "Cellery Test";
     };
-
-    public static readonly ADD_IMAGE_NAME = "add image name";
-    public static readonly ADD_INSTANCE_NAME = "add instance name";
 }
 
 export default Constants;

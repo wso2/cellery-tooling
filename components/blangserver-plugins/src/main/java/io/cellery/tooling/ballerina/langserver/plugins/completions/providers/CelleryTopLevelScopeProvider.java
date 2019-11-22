@@ -19,7 +19,6 @@
 package io.cellery.tooling.ballerina.langserver.plugins.completions.providers;
 
 import io.cellery.tooling.ballerina.langserver.plugins.Utils;
-import io.cellery.tooling.ballerina.langserver.plugins.completions.CompletionUtils;
 import io.cellery.tooling.ballerina.langserver.plugins.completions.SnippetGenerator;
 import org.ballerinalang.annotation.JavaSPIService;
 import org.ballerinalang.langserver.compiler.LSContext;
@@ -28,6 +27,9 @@ import org.ballerinalang.langserver.completions.providers.scopeproviders.TopLeve
 import org.eclipse.lsp4j.CompletionItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.ballerinalang.compiler.tree.BLangFunction;
+import org.wso2.ballerinalang.compiler.tree.BLangNode;
+import org.wso2.ballerinalang.compiler.tree.BLangPackage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,8 +41,8 @@ import java.util.List;
  * The completions are injected only if cellery had been imported.
  */
 @JavaSPIService("org.ballerinalang.langserver.completions.spi.LSCompletionProvider")
-public class CelleryTopLevelContextProvider extends TopLevelScopeProvider {
-    private static final Logger logger = LoggerFactory.getLogger(CelleryTopLevelContextProvider.class);
+public class CelleryTopLevelScopeProvider extends TopLevelScopeProvider {
+    private static final Logger logger = LoggerFactory.getLogger(CelleryTopLevelScopeProvider.class);
 
     @Override
     public Precedence getPrecedence() {
@@ -54,8 +56,8 @@ public class CelleryTopLevelContextProvider extends TopLevelScopeProvider {
         try {
             if (Utils.hasCelleryImport(context)) {
                 Boolean forcedRemoved = context.get(CompletionKeys.FORCE_REMOVED_STATEMENT_WITH_PARENTHESIS_KEY);
+                // TODO: Have to check other relevant conditions
                 if (forcedRemoved == null || !forcedRemoved) {
-                    CompletionUtils.addCelleryInfoToContext(context);
                     completions.addAll(this.getCellerySnippetCompletions(context));
                 }
             }
@@ -80,8 +82,27 @@ public class CelleryTopLevelContextProvider extends TopLevelScopeProvider {
      */
     private List<CompletionItem> getCellerySnippetCompletions(LSContext context) {
         List<CompletionItem> completions = new ArrayList<>();
-        completions.add(SnippetGenerator.getCelleryBuildMethodSnippet().build(context));
-        completions.add(SnippetGenerator.getCelleryRunMethodSnippet().build(context));
+        BLangNode scopeNode = context.get(CompletionKeys.SCOPE_NODE_KEY);
+        if (scopeNode instanceof BLangPackage) {
+            boolean buildFunctionAvailable = false;
+            boolean runFunctionAvailable = false;
+            BLangPackage bLangPackage = (BLangPackage) scopeNode;
+            List<BLangFunction> bLangFunctions = bLangPackage.getFunctions();
+
+            for (BLangFunction bLangFunction : bLangFunctions) {
+                if (bLangFunction.name.value.equalsIgnoreCase("build")) {
+                    buildFunctionAvailable = true;
+                } else if (bLangFunction.name.value.equalsIgnoreCase("run")) {
+                    runFunctionAvailable = true;
+                }
+            }
+            if (!buildFunctionAvailable) {
+                completions.add(SnippetGenerator.getCelleryBuildMethodSnippet().build(context));
+            }
+            if (!runFunctionAvailable) {
+                completions.add(SnippetGenerator.getCelleryRunMethodSnippet().build(context));
+            }
+        }
         return completions;
     }
 }

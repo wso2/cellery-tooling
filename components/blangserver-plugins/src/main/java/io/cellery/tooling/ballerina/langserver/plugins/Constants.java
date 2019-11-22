@@ -49,12 +49,12 @@ public class Constants {
      * Completion Providers related constants.
      */
     public static class CompletionProvider {
-        private static final String CELLERY_PREFIX = "cellery:";
+        private static final String CELLERY_PREFIX = "cellery: ";
         public static final String COMPONENT_SNIPPET_LABEL = CELLERY_PREFIX + "component";
         public static final String CELL_SNIPPET_LABEL = CELLERY_PREFIX + "cell";
         public static final String COMPOSITE_SNIPPET_LABEL = CELLERY_PREFIX + "composite";
-        public static final String CELLERY_BUILD_FUNCTION_LABEL = CELLERY_PREFIX + "public build function";
-        public static final String CELLERY_RUN_FUNCTION_LABEL = CELLERY_PREFIX + "public run function";
+        public static final String CELLERY_BUILD_FUNCTION_LABEL = CELLERY_PREFIX + "build function";
+        public static final String CELLERY_RUN_FUNCTION_LABEL = CELLERY_PREFIX + "run function";
     }
 
     /**

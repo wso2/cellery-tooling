@@ -109,6 +109,35 @@ public class SnippetGenerator {
         return "{" + componentsString + "}";
     }
 
+    /**
+     * Get Cellery Build method snippet.
+     *
+     * @return {@link SnippetBlock} Generated Snippet Block
+     */
+    public static SnippetBlock getCelleryBuildMethodSnippet() {
+        String snippet = "public function build(cellery:ImageName iName) returns error? {"
+                + System.lineSeparator() + "\t${1}"
+                + System.lineSeparator() + "}";
+        return new SnippetBlock(Constants.CompletionProvider.CELLERY_BUILD_FUNCTION_LABEL, snippet,
+                ItemResolverConstants.SNIPPET_TYPE,
+                SnippetBlock.SnippetType.SNIPPET);
+    }
+
+    /**
+     * Get Cellery Run method snippet.
+     *
+     * @return {@link SnippetBlock} Generated Snippet Block
+     */
+    public static SnippetBlock getCelleryRunMethodSnippet() {
+        String snippet = "public function run(cellery:ImageName iName, map<cellery:ImageName> instances, "
+                + "boolean startDependencies, boolean shareDependencies) returns (cellery:InstanceState[]|error?) {"
+                + System.lineSeparator() + "\t${1}"
+                + System.lineSeparator() + "}";
+        return new SnippetBlock(Constants.CompletionProvider.CELLERY_RUN_FUNCTION_LABEL, snippet,
+                ItemResolverConstants.SNIPPET_TYPE,
+                SnippetBlock.SnippetType.SNIPPET);
+    }
+
     private SnippetGenerator() {    // Prevent initialization
     }
 }

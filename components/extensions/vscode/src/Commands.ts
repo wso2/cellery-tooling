@@ -69,7 +69,7 @@ class Commands {
             return;
         }
         const buildCommand = `${Constants.celleryCommands.CELLERY_BUILD} ${file} ${imageName}`;
-        Commands.runCommandInTerminal(buildCommand, file, Constants.terminals.CELLERY_BUILD);
+        Commands.runCommandInCurrentTerminal(buildCommand);
     }
 
     /**
@@ -122,9 +122,8 @@ class Commands {
         }
         const buildCommand = `${Constants.celleryCommands.CELLERY_BUILD} ${file} ${imageName}`;
         const runCommand = `${Constants.celleryCommands.CELLERY_RUN} ${imageName} -n ${instanceName} -d`;
-        const logCommand = `${Constants.celleryCommands.CELLERY_LOGS} ${instanceName}`;
-        Commands.runCommandInTerminal(`${buildCommand} && ${runCommand} && ${logCommand}`, file,
-                                      Constants.terminals.CELLERY_RUN);
+        const logCommand = `${Constants.celleryCommands.CELLERY_LOGS} ${instanceName} -f`;
+        Commands.runCommandInCurrentTerminal(`${buildCommand} && ${runCommand} && ${logCommand}`);
     }
 
     /**
@@ -155,8 +154,7 @@ class Commands {
         }
         const buildCommand = `${Constants.celleryCommands.CELLERY_BUILD} ${file} ${imageName}`;
         const testCommand = `${Constants.celleryCommands.CELLERY_TEST} ${imageName}`;
-        Commands.runCommandInTerminal(`${buildCommand} && ${testCommand}`, file,
-                                      Constants.terminals.CELLERY_TEST);
+        Commands.runCommandInCurrentTerminal(`${buildCommand} && ${testCommand}`);
     }
 
     /**
@@ -208,26 +206,20 @@ class Commands {
     }
 
     /**
-     * Run CLI command in terminal
+     * Run CLI command in current terminal
      */
-    private static runCommandInTerminal(command: string, file: string, terminalName: string) {
-        let isTerminalAvailable = false;
-        vscode.window.terminals.forEach((terminal) => {
-            if (terminal.name === terminalName) {
-                terminal.show(true);
-                terminal.sendText(command);
-                isTerminalAvailable = true;
-            }
-        });
-        if (isTerminalAvailable) {
+    private static runCommandInCurrentTerminal(command: string) {
+        const terminal = vscode.window.activeTerminal;
+        if (terminal === undefined) {
+            const newTerminal = vscode.window.createTerminal({
+                name: "cellery",
+            });
+            newTerminal.show(false);
+            newTerminal.sendText(command);
             return;
         }
-        const newTerminal = vscode.window.createTerminal({
-            name: terminalName,
-            cwd: path.dirname(file),
-        });
-        newTerminal.show(true);
-        newTerminal.sendText(command);
+        terminal.show(false);
+        terminal.sendText(command);
     }
 }
 

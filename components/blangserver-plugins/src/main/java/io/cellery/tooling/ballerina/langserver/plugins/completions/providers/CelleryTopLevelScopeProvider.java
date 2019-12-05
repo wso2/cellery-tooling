@@ -97,10 +97,12 @@ public class CelleryTopLevelScopeProvider extends TopLevelScopeProvider {
                 }
             }
             if (!buildFunctionAvailable) {
-                completions.add(SnippetGenerator.getCelleryBuildMethodSnippet().build(context));
+                completions.add(SnippetGenerator.getCellBuildFunctionSnippet().build(context));
+                completions.add(SnippetGenerator.getCompositeBuildFunctionSnippet().build(context));
             }
             if (!runFunctionAvailable) {
-                completions.add(SnippetGenerator.getCelleryRunMethodSnippet().build(context));
+                completions.add(SnippetGenerator.getCellRunFunctionSnippet().build(context));
+                completions.add(SnippetGenerator.getCompositeRunFunctionSnippet().build(context));
             }
         }
         return completions;

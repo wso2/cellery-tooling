@@ -135,24 +135,6 @@ public class SnippetGenerator {
     }
 
     /**
-     * Get Cell Run function snippet.
-     *
-     * @return {@link SnippetBlock} Generated Snippet Block
-     */
-    public static SnippetBlock getCellRunFunctionSnippet() {
-        String snippet = "public function run(cellery:ImageName iName, map<cellery:ImageName> instances, "
-                + "boolean startDependencies, boolean shareDependencies) returns (cellery:InstanceState[]|error?) {"
-                + System.lineSeparator() + "\tcellery:CellImage|cellery:Composite ${1:cellImage} = "
-                + "cellery:constructImage(iName);"
-                + System.lineSeparator() + "\treturn <@untainted> cellery:createInstance(${1:cellImage}, iName,"
-                + "instances, startDependencies, shareDependencies);"
-                + System.lineSeparator() + "}";
-        return new SnippetBlock(Constants.CompletionProvider.CELL_RUN_FUNCTION_LABEL, snippet,
-                ItemResolverConstants.SNIPPET_TYPE,
-                SnippetBlock.SnippetType.SNIPPET);
-    }
-
-    /**
      * Get Composite Build function snippet.
      *
      * @return {@link SnippetBlock} Generated Snippet Block
@@ -178,19 +160,19 @@ public class SnippetGenerator {
     }
 
     /**
-     * Get Composite Run function snippet.
+     * Get Cell/Composite Run function snippet.
      *
      * @return {@link SnippetBlock} Generated Snippet Block
      */
-    public static SnippetBlock getCompositeRunFunctionSnippet() {
+    public static SnippetBlock getRunFunctionSnippet() {
         String snippet = "public function run(cellery:ImageName iName, map<cellery:ImageName> instances, "
                 + "boolean startDependencies, boolean shareDependencies) returns (cellery:InstanceState[]|error?) {"
-                + System.lineSeparator() + "\tcellery:CellImage|cellery:Composite ${1:composite} = "
+                + System.lineSeparator() + "\tcellery:CellImage|cellery:Composite ${1:image} = "
                 + "cellery:constructImage(iName);"
-                + System.lineSeparator() + "\treturn <@untainted> cellery:createInstance(${1:composite}, iName,"
+                + System.lineSeparator() + "\treturn <@untainted> cellery:createInstance(${1:image}, iName, "
                 + "instances, startDependencies, shareDependencies);"
                 + System.lineSeparator() + "}";
-        return new SnippetBlock(Constants.CompletionProvider.COMPOSITE_RUN_FUNCTION_LABEL, snippet,
+        return new SnippetBlock(Constants.CompletionProvider.RUN_FUNCTION_LABEL, snippet,
                 ItemResolverConstants.SNIPPET_TYPE,
                 SnippetBlock.SnippetType.SNIPPET);
     }

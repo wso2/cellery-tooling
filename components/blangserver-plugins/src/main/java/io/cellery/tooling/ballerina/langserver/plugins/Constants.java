@@ -54,9 +54,8 @@ public class Constants {
         public static final String CELL_SNIPPET_LABEL = CELLERY_PREFIX + "cell";
         public static final String COMPOSITE_SNIPPET_LABEL = CELLERY_PREFIX + "composite";
         public static final String CELL_BUILD_FUNCTION_LABE = CELLERY_PREFIX + "cell build function";
-        public static final String CELL_RUN_FUNCTION_LABEL = CELLERY_PREFIX + "cell run function";
         public static final String COMPOSITE_BUILD_FUNCTION_LABEL = CELLERY_PREFIX + "composite build function";
-        public static final String COMPOSITE_RUN_FUNCTION_LABEL = CELLERY_PREFIX + "composite run function";
+        public static final String RUN_FUNCTION_LABEL = CELLERY_PREFIX + "run function";
     }
 
     /**

@@ -101,8 +101,7 @@ public class CelleryTopLevelScopeProvider extends TopLevelScopeProvider {
                 completions.add(SnippetGenerator.getCompositeBuildFunctionSnippet().build(context));
             }
             if (!runFunctionAvailable) {
-                completions.add(SnippetGenerator.getCellRunFunctionSnippet().build(context));
-                completions.add(SnippetGenerator.getCompositeRunFunctionSnippet().build(context));
+                completions.add(SnippetGenerator.getRunFunctionSnippet().build(context));
             }
         }
         return completions;

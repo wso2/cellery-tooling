@@ -15,8 +15,8 @@
 #  under the License.
 
 PROJECT_ROOT := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
-PROJECT_PKG := github.com/cellery-io/mesh-observability
-VERSION := 0.5.0-SNAPSHOT
+PROJECT_PKG := github.com/wso2/cellery-tooling
+VERSION := 0.6.0-SNAPSHOT
 
 
 all: init clean build package

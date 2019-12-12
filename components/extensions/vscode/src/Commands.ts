@@ -209,16 +209,13 @@ class Commands {
      * Run CLI command in current terminal
      */
     private static runCommandInCurrentTerminal(command: string) {
-        const terminal = vscode.window.activeTerminal;
+        let terminal = vscode.window.activeTerminal;
         if (terminal === undefined) {
-            const newTerminal = vscode.window.createTerminal({
+            terminal = vscode.window.createTerminal({
                 name: "cellery",
             });
-            newTerminal.show(false);
-            newTerminal.sendText(command);
-            return;
         }
-        terminal.show(false);
+        terminal.show();
         terminal.sendText(command);
     }
 }

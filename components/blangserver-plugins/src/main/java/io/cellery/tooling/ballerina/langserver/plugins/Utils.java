@@ -141,7 +141,7 @@ public class Utils {
             if (keyValuePair.getKey() instanceof BLangSimpleVarRef) {
                 BLangSimpleVarRef fieldNameRef = (BLangSimpleVarRef) keyValuePair.getKey();
                 if (Objects.equals(fieldNameRef.getVariableName().getValue(), fieldName)) {
-                    fieldValue = keyValuePair.getValue();
+                    fieldValue = Utils.getActualExpression(keyValuePair.getValue());
                     break;
                 }
             }

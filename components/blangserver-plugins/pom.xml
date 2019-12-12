@@ -28,7 +28,7 @@
     <groupId>io.cellery.tooling</groupId>
     <artifactId>io.cellery.tooling.ballerina.langserver.plugins</artifactId>
     <name>Cellery Tooling - Ballerina Lang Server Plugins</name>
-    <version>0.5.0-SNAPSHOT</version>
+    <version>0.6.0-SNAPSHOT</version>
 
     <dependencyManagement>
         <dependencies>

@@ -189,9 +189,9 @@
     </build>
 
     <scm>
-        <url>https://github.com/wso2-cellery/cellery-tooling.git</url>
-        <developerConnection>scm:git:https://github.com/wso2-cellery/cellery-tooling.git</developerConnection>
-        <connection>scm:git:https://github.com/wso2-cellery/cellery-tooling.git</connection>
+        <url>https://github.com/wso2/cellery-tooling.git</url>
+        <developerConnection>scm:git:https://github.com/wso2/cellery-tooling.git</developerConnection>
+        <connection>scm:git:https://github.com/wso2/cellery-tooling.git</connection>
         <tag>HEAD</tag>
     </scm>
 

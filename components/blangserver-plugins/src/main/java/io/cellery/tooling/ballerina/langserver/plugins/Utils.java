@@ -29,6 +29,7 @@ import org.wso2.ballerinalang.compiler.tree.expressions.BLangExpression;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangInvocation;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangRecordLiteral;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangSimpleVarRef;
+import org.wso2.ballerinalang.compiler.tree.expressions.BLangTypeConversionExpr;
 
 import java.util.Objects;
 
@@ -146,5 +147,22 @@ public class Utils {
             }
         }
         return fieldValue;
+    }
+
+    /**
+     * Get the actual actual ballerina expression from casted ballerina expression
+     *
+     * @param bLangExpression A pure ballerina expression or casted ballerina expression
+     * @return The ballerina expression originally passed or retrieved from ballerina type conversion expression
+     */
+    public static BLangExpression getActualExpression(BLangExpression bLangExpression) {
+        BLangExpression actualExpression = null;
+        if (bLangExpression instanceof BLangTypeConversionExpr) {
+            actualExpression = ((BLangTypeConversionExpr) bLangExpression).expr;
+        }
+        if (actualExpression == null) {
+            actualExpression = bLangExpression;
+        }
+        return actualExpression;
     }
 }

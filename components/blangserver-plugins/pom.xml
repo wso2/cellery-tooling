@@ -266,7 +266,7 @@
     </pluginRepositories>
 
     <properties>
-        <org.ballerinalang.version>1.0.1</org.ballerinalang.version>
+        <org.ballerinalang.version>1.0.3</org.ballerinalang.version>
         <lsp4j.version>0.6.0</lsp4j.version>
         <antlr4.runtime.version>4.5.1.wso2v1</antlr4.runtime.version>
         <slf4j.version>1.7.26</slf4j.version>

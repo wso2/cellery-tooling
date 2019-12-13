@@ -16,7 +16,7 @@
 
 PROJECT_ROOT := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 PROJECT_PKG := github.com/wso2/cellery-tooling
-VERSION := 0.6.0-SNAPSHOT
+VERSION ?= 0.6.0-SNAPSHOT
 
 
 all: init clean build package

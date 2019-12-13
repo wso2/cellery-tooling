@@ -63,7 +63,8 @@ public class CelleryTreeVisitor extends TreeVisitor {
 
     @Override
     public void visit(BLangSimpleVariableDef simpleVariableDef) {
-        BLangExpression assignedExpression = simpleVariableDef.getVariable().getInitialExpression();
+        BLangExpression assignedExpression = Utils.getActualExpression(simpleVariableDef.getVariable().
+                getInitialExpression());
         String variableName = simpleVariableDef.getVariable().getName().getValue();
         if (visibleVariables.contains(variableName)) {
             if (Utils.checkRecordType(assignedExpression, Constants.CelleryTypes.COMPONENT)) {
@@ -72,25 +73,27 @@ public class CelleryTreeVisitor extends TreeVisitor {
                         .computeIfAbsent(variableName, k -> new Component());
 
                 // Extracting component name
-                BLangExpression name = Utils.getFieldValue(recordLiteral, Component.NAME_FIELD_NAME);
+                BLangExpression name = Utils.getActualExpression(Utils.getFieldValue(recordLiteral,
+                        Component.NAME_FIELD_NAME));
                 if (name instanceof BLangLiteral) {
                     component.setName(((BLangLiteral) name).getValue().toString());
                 }
 
                 // Extracting dependencies information
-                BLangExpression dependencies = Utils.getFieldValue(recordLiteral, Component.DEPENDENCIES_FIELD_NAME);
+                BLangExpression dependencies = Utils.getActualExpression(Utils.getFieldValue(recordLiteral,
+                        Component.DEPENDENCIES_FIELD_NAME));
                 if (Utils.checkRecordType(dependencies, Constants.CelleryTypes.DEPENDENCIES)) {
                     Map<String, Image> componentDependencies = new HashMap<>();
                     // Extracting cell dependencies from Component.dependencies.cells
-                    BLangExpression cellDependencies = Utils.getFieldValue((BLangRecordLiteral) dependencies,
-                            Component.DEPENDENCIES_CELLS_FIELD_NAME);
+                    BLangExpression cellDependencies = Utils.getActualExpression(Utils.getFieldValue(
+                            (BLangRecordLiteral) dependencies, Component.DEPENDENCIES_CELLS_FIELD_NAME));
                     if (cellDependencies instanceof BLangRecordLiteral) {
                         componentDependencies.putAll(
                                 extractDependencyInformation((BLangRecordLiteral) cellDependencies));
                     }
                     // Extracting composite dependencies from Component.dependencies.composites
-                    BLangExpression compositeDependencies = Utils.getFieldValue((BLangRecordLiteral) dependencies,
-                            Component.DEPENDENCIES_COMPOSITES_FIELD_NAME);
+                    BLangExpression compositeDependencies = Utils.getActualExpression(Utils.getFieldValue(
+                            (BLangRecordLiteral) dependencies, Component.DEPENDENCIES_COMPOSITES_FIELD_NAME));
                     if (compositeDependencies instanceof BLangRecordLiteral) {
                         componentDependencies.putAll(
                                 extractDependencyInformation((BLangRecordLiteral) compositeDependencies));
@@ -134,12 +137,12 @@ public class CelleryTreeVisitor extends TreeVisitor {
                 if (recordValue instanceof BLangRecordLiteral) {
                     // Extracting dependency specified as record {org: string, name: string, ver: string}
                     BLangRecordLiteral imageRecordLiteral = (BLangRecordLiteral) recordValue;
-                    BLangExpression orgNameExpression = Utils.getFieldValue(imageRecordLiteral,
-                            Component.DEPENDENCIES_IMAGE_ORG_FIELD_NAME);
-                    BLangExpression imageNameExpression = Utils.getFieldValue(imageRecordLiteral,
-                            Component.DEPENDENCIES_IMAGE_NAME_FIELD_NAME);
-                    BLangExpression versionExpression = Utils.getFieldValue(imageRecordLiteral,
-                            Component.DEPENDENCIES_IMAGE_VERSION_FIELD_NAME);
+                    BLangExpression orgNameExpression = Utils.getActualExpression(Utils.getFieldValue(
+                            imageRecordLiteral, Component.DEPENDENCIES_IMAGE_ORG_FIELD_NAME));
+                    BLangExpression imageNameExpression = Utils.getActualExpression(Utils.getFieldValue(
+                            imageRecordLiteral, Component.DEPENDENCIES_IMAGE_NAME_FIELD_NAME));
+                    BLangExpression versionExpression = Utils.getActualExpression(Utils.getFieldValue(
+                            imageRecordLiteral, Component.DEPENDENCIES_IMAGE_VERSION_FIELD_NAME));
                     if (orgNameExpression instanceof BLangLiteral
                             && imageNameExpression instanceof BLangLiteral
                             && versionExpression instanceof BLangLiteral) {

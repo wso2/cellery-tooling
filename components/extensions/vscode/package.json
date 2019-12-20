@@ -2,17 +2,23 @@
 	"name": "cellery-vscode-extension",
 	"displayName": "Cellery",
 	"publisher": "cellery",
-	"description": "Cellery VS Code Plugin",
+	"description": "Code completions, snippet suggestions and deployment support for Cellery",
 	"version": "0.6.0-SNAPSHOT",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/wso2/cellery-tooling.git",
 		"directory": "components/plugins/vscode"
 	},
+	"homepage": "https://cellery.io",
+	"icon": "resources/images/cellery-logo.png",
+	"galleryBanner": {
+		"color": "#eeeeee"
+	},
 	"engines": {
 		"vscode": "^1.34.0"
 	},
 	"categories": [
+		"Snippets",
 		"Other"
 	],
 	"main": "./dist/extension.js",
@@ -48,7 +54,7 @@
 		"pretest": "npm run clean && tsc -p ./",
 		"test": "node ./dist/test/runTest.js",
 		"prepackage": "copyfiles --error --flat \"../../blangserver-plugins/target/io.cellery.tooling.ballerina.langserver.plugins.jar\" \"./resources\"",
-		"package": "vsce package",
+		"package": "vsce package --baseImagesUrl https://raw.githubusercontent.com/wso2/cellery-tooling/master/components/extensions/vscode",
 		"vscode:uninstall": "node ./dist/uninstall.js"
 	},
 	"devDependencies": {

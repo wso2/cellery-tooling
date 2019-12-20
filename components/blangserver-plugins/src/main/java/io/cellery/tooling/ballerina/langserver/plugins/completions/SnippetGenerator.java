@@ -38,7 +38,7 @@ public class SnippetGenerator {
     public static SnippetBlock getComponentSnippet() {
         return new SnippetBlock(Constants.CompletionProvider.COMPONENT_SNIPPET_LABEL,
                 "cellery:Component ${3:component} = {\n" +
-                            "\tname: \"${1:componentName}\",\n" +
+                            "\tname: \"${1:component-name}\",\n" +
                             "\tsrc: {\n" +
                                 "\t\timage: \"${2:image}\"\n" +
                             "\t}\n" +
@@ -124,7 +124,7 @@ public class SnippetGenerator {
                 + System.lineSeparator() + "\t};"
                 + System.lineSeparator() + "\tcellery:CellImage ${4:cell} = {"
                 + System.lineSeparator() + "\t\tcomponents: {"
-                + System.lineSeparator() + "\t\t\"${1:component-name}\": ${3:component}"
+                + System.lineSeparator() + "\t\t\t\"${1:component-name}\": ${3:component}"
                 + System.lineSeparator() + "\t\t}"
                 + System.lineSeparator() + "\t};"
                 + System.lineSeparator() + "\treturn <@untainted> cellery:createImage(${4:cell}, iName);"
